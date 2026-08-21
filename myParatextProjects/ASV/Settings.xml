@@ -1,0 +1,15 @@
+﻿<ScriptureText>
+  <StyleSheet>usfm.sty</StyleSheet>
+  <Versification>4</Versification>
+  <LanguageIsoCode>eng:::</LanguageIsoCode>
+  <Language>English</Language>
+  <FullName>American Standard Version</FullName>
+  <Encoding>65001</Encoding>
+  <Editable>F</Editable>
+  <Copyright />
+  <Name>ASV</Name>
+  <FileNameBookNameForm>41MAT</FileNameBookNameForm>
+  <FileNamePrePart />
+  <FileNamePostPart>ASV.SFM</FileNamePostPart>
+  <Naming PrePart="" PostPart="ASV.SFM" BookNameForm="41MAT" />
+</ScriptureText>

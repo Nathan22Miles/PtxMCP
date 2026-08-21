@@ -1,0 +1,7 @@
+- Publish as an npx package?
+- Test on Windows?
+- Make github repo viewable
+- Mac should default to ~/.platform.bible/projects/Paratext 9 Projects
+- add installation instructions for Google Gemini API
+- Get a machine readable copy of the UBS handbook from Reinier
+- thank unfoldingWord for library
