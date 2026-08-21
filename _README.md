@@ -19,19 +19,19 @@ questions — it picks the right tool and arguments on its own.
 - "Does BTBK have a translation of the Gospel of John? If so, show me chapter 1."
 
 ## Caveats
-- This code 
+- This code
     - Has only had very limited testing so far. It did work for me on Mac and Windows.
-    - Has only been tired with Claude Desktop.
+    - Has only been tested with Claude Desktop.
     - Does not support access to Paratext resource projects, e.g. RVR80. 
         - In order to have a text to compare to I used the publicly available WEB (World English Bible)
 - In order for Claude to access this local MCP server, Claude must be running on the local machine, not in the cloud.
-    - I think this means you must chose the 'Chat' option and NOT the 'Cowork' option when starting the chat.
-    - The Cowork option seems to (at least sometimes) to run in a cloud sandbox that does not have access to local machine.
+    - I think this means you must choose the 'Chat' option and NOT the 'Cowork' option when starting the chat.
+    - The Cowork option seems to (at least sometimes) run in a cloud sandbox that does not have access to the local machine.
 ## Requirements
 
 - Node.js 18+
-    - I think this automatically installed when you install Claude Desktop
-- One or more Paratext project project folders on disk (each containing a `Settings.xml`
+    - I think this is automatically installed when you install Claude Desktop
+- One or more Paratext project folders on disk (each containing a `Settings.xml`
   and `*.U?SFM` book files)
 
 ## Setup/Installation
@@ -61,7 +61,7 @@ IMPORTANT! Close and restart Claude to load the new MCP server.
 
 Ask Claude: "What Paratext projects are available?"
 
-### Installation Troubleshooting 
+### Installation Troubleshooting
 - Go to command line and try 'npx -y @milesnl/ptx-mcp'
     - Successful outcome is runs and then waits for terminal input. Control C to terminate.
     - If it prints error messages instead, there is some reason we cannot access the ptx-mcp NPM package.
@@ -80,11 +80,12 @@ need to add an additional argument pointing to that location.
 ### To run ptx-mcp from source in development mode
 
 To run from client locally installed source
-- git clone ???????
-- cd /path/to/source/PtxMCP
+- cd /path/to/source
+- git clone https://github.com/Nathan22Miles/PtxMCP
+- cd PtxMCP
 - npm install
 
-Add to your MCP client's config (e.g. `claude_desktop_config.json`):
+Add to your MCP client's config (e.g. `claude_desktop_config.json`).
 
 ```json
 "mcpServers": {
@@ -92,13 +93,13 @@ Add to your MCP client's config (e.g. `claude_desktop_config.json`):
       "command": "npx",
       "args": [
         "-y",
-        "/path/to/PtxMCP",
+        "/path/to/PtxMCP"
       ]
     }
   }
 ```
 
-If you don't have Paratext installed you can add '/path/to/source/PtxMCP/myParatextProjects' to args.
+If you don't have Paratext installed, you can add '/path/to/source/PtxMCP/myParatextProjects' to args.
 This provides access to WEB project.
 
 ## MCP Supported Commands
