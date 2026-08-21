@@ -1,11 +1,11 @@
 # ptx-mcp
 
-An MCP (Model Context Protocol) server that reads scripture text directly from
+MCP (Model Context Protocol) server that reads scripture text directly from
 local Paratext project folders (USFM files) and exposes it as tools an LLM can call.
 
 ## Example prompts supported
 
-Once the server is configured (see below), you can just ask Claude natural-language
+Once the server is installed (see below), you can ask Claude natural-language
 questions — it picks the right tool and arguments on its own.
 
 - "What Paratext projects do I have available?"
@@ -19,37 +19,68 @@ questions — it picks the right tool and arguments on its own.
 - "Does BTBK have a translation of the Gospel of John? If so, show me chapter 1."
 
 ## Caveats
-
-
+- This code 
+    - Has only had very limited testing so far. It did work for me on Mac and Windows.
+    - Has only been tired with Claude Desktop.
+    - Does not support access to Paratext resource projects, e.g. RVR80. 
+        - In order to have a text to compare to I used the publicly available WEB (World English Bible)
+- In order for Claude to access this local MCP server, Claude must be running on the local machine, not in the cloud.
+    - I think this means you must chose the 'Chat' option and NOT the 'Cowork' option when starting the chat.
+    - The Cowork option seems to (at least sometimes) to run in a cloud sandbox that does not have access to local machine.
 ## Requirements
 
 - Node.js 18+
-- One or more Paratext project folders on disk (each containing a `Settings.xml`
-  and `*.SFM` book files)
+    - I think this automatically installed when you install Claude Desktop
+- One or more Paratext project project folders on disk (each containing a `Settings.xml`
+  and `*.U?SFM` book files)
 
-## Setup
+## Setup/Installation
 
-No install step is required — the server is run via `npx`.
+In Claude Desktop
+    - Click your name in the bottom left corner
+    - Click 'Settings'
+    - Click 'Developers'
+    - Click 'Edit Config'
+    - Double click 'claude_desktop_config.json' to open editor
 
-The server needs to know where your Paratext projects live. It resolves this in
-order:
+Edit 'claude_desktop_config.json' to add server
 
-1. A CLI argument passed at startup
-2. The `PARATEXT_PROJECTS_DIR` environment variable
-3. The default Paratext location on Windows: `C:\My Paratext 9 Projects`
+```json
+{
+  "mcpServers": {
+    "ptx-mcp": {
+      "command": "npx",
+      "args": ["-y", "@milesnl/ptx-mcp"]
+    }
+  }
+  ...
+}
+```
 
-### Configure in Claude Desktop / Claude Code
+IMPORTANT! Close and restart Claude to load the new MCP server.
 
-#### Location of claude_desktop_config.json
-- macOS: ~/Library/Application Support/Claude
-- Windows: %APPDATA%\Claude 
-    - (typically C:\Users\<you>\AppData\Roaming\Claude)
-- Linux: ~/.config/Claude
+Ask Claude: "What Paratext projects are available?"
 
-#### Before ptx-msp is published
+### Installation Troubleshooting 
+- Go to command line and try 'npx -y @milesnl/ptx-mcp'
+    - Successful outcome is runs and then waits for terminal input. Control C to terminate.
+    - If it prints error messages instead, there is some reason we cannot access the ptx-mcp NPM package.
+- After restarting Claude, go to Settings/Developers. Should show ptx-mcp as a Local MCP Server. If not something went wrong with loading.
+- Ask Claude where the log file showing Local MCP server loading errors is and take a look.
+
+### Installation Notes
+
+If your My Paratext folder is not at the default location, `C:\My Paratext 9 Projects`, you will
+need to add an additional argument pointing to that location.
+
+```json
+      "args": ["-y", "@milesnl/ptx-mcp", "/path/to/My Paratext 9 Projects"]
+```
+
+### To run ptx-mcp from source in development mode
 
 To run from client locally installed source
-- install Node
+- git clone ???????
 - cd /path/to/source/PtxMCP
 - npm install
 
@@ -61,48 +92,19 @@ Add to your MCP client's config (e.g. `claude_desktop_config.json`):
       "command": "npx",
       "args": [
         "-y",
-        "/path/to/source/PtxMCP",
-        "/path/to/source/myParatextProjects"
+        "/path/to/PtxMCP",
       ]
     }
   }
 ```
 
-If you don't have Paratext installed you can use /path/to/source/PtxMCP/myParatextProjects
-in order to test MCP server using the freely available WEB version.
+If you don't have Paratext installed you can add '/path/to/source/PtxMCP/myParatextProjects' to args.
+This provides access to WEB project.
 
-#### After ptx-mcp has been published:
+## MCP Supported Commands
 
-```json
-{
-  "mcpServers": {
-    "ptx-mcp": {
-      "command": "npx",
-      "args": ["-y", "ptx-mcp", "/path/to/My Paratext Projects"]
-    }
-  }
-}
-```
-
-Or, without a CLI argument, using the environment variable instead:
-
-```json
-{
-  "mcpServers": {
-    "ptx-mcp": {
-      "command": "npx",
-      "args": ["-y", "ptx-mcp"],
-      "env": {
-        "PARATEXT_PROJECTS_DIR": "/path/to/My Paratext Projects"
-      }
-    }
-  }
-}
-```
-
-
-
-## Tools
+Note: In most cases you do not need to know these low level commands.
+Claude automatically translates your requests into this format to access the MCP.
 
 ### `list-projects`
 
@@ -156,5 +158,8 @@ folder, which is not checked into version control.
 
 ## Acknowledgements
 
+Special thanks to [unfoldingWord](https://www.unfoldingword.org/) for [usfm-js](https://github.com/translationCoreApps/usfm-js), the USFM parser this project relies on.
+
 ## To Do
 - Provide auto install, e.g. 'npx @milesnl/ptx-mcp --install'
+- Try out with Gemini CLI etc.
