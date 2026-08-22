@@ -58,19 +58,20 @@ Edit 'claude_desktop_config.json' to add server as follows
 
 IMPORTANT! Close and restart Claude to load the new MCP server.
 
-Ask Claude: "What Paratext projects are available?"
+To test installation ask Claude: "List Paratext projects"
 
 ### Installation Troubleshooting
 - Go to command line and try 'npx -y @milesnl/ptx-mcp'
     - Successful outcome is runs and then waits for terminal input. Control C to terminate.
-    - If it prints error messages instead, there is some reason we cannot access the ptx-mcp NPM package.
-- After restarting Claude, go to Settings/Developers. Should show ptx-mcp as a Local MCP Server. If not something went wrong with loading.
-- If Settings/Developers says "ptx-mcp failed", click "View Logs" to see why.
+      If it prints error messages instead, there is some reason we cannot access the @milesn/ptx-mcp NPM package.
+- After restarting Claude, go to Settings/Developers. 
+  This should show ptx-mcp as a Local MCP Server. If not something went wrong with loading.
+- If says "ptx-mcp failed", click "View Logs" to see why.
 
 ### Installation Notes
 
 If your My Paratext folder is not at the default location, `C:\My Paratext 9 Projects`, you will
-need to add an additional argument pointing to that location.
+need to modify "args" to include that location.
 
 ```json
       "args": ["-y", "@milesnl/ptx-mcp", "/path/to/My Paratext 9 Projects"]
@@ -153,8 +154,7 @@ npm run build   # compile TypeScript to dist/
 npm test        # run the Vitest suite (uses the myParatextProjects/ fixture data)
 ```
 
-Tests read real Paratext project data from the local `myParatextProjects/`
-folder, which is not checked into version control.
+Tests read aratext project data from the `myParatextProjects/` folder.
 
 ## Acknowledgements
 
