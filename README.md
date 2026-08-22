@@ -68,7 +68,8 @@ To test installation ask Claude: "List Paratext projects"
     - Successful outcome is runs and then waits for terminal input. Control C to terminate.
       If it prints error messages instead, there is some reason we cannot access the @milesn/ptx-mcp NPM package.
 - After restarting Claude, go to Settings/Developers. 
-  This should show ptx-mcp as a Local MCP Server. If not something went wrong with loading.
+  This should show ptx-mcp as a Local MCP Server. 
+  If not something went wrong with loading.
 - If says "ptx-mcp failed", click "View Logs" to see why.
 
 ### Installation Notes
@@ -157,7 +158,7 @@ npm run build   # compile TypeScript to dist/
 npm test        # run the Vitest suite (uses the myParatextProjects/ fixture data)
 ```
 
-Tests read aratext project data from the `myParatextProjects/` folder.
+Tests read Paratext project data from the `myParatextProjects/` folder.
 
 ## Acknowledgements
 
