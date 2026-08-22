@@ -58,6 +58,9 @@ Edit 'claude_desktop_config.json' to add server as follows
 
 IMPORTANT! Close and restart Claude to load the new MCP server.
 
+The ptx-mcp package will be automatically downloaded from the NPM library
+the first time you give a Paratext related command to Claude.
+
 To test installation ask Claude: "List Paratext projects"
 
 ### Installation Troubleshooting
