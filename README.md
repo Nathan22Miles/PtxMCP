@@ -23,10 +23,9 @@ questions — it picks the right tool and arguments on its own.
     - Has only had very limited testing so far. It did work for me on Mac and Windows.
     - Has only been tested with Claude Desktop.
     - Does not support access to Paratext resource projects, e.g. RVR80. 
-        - In order to have a text to compare to I used the publicly available WEB (World English Bible)
-- In order for Claude to access this local MCP server, Claude must be running on the local machine, not in the cloud.
+- In order for Claude to access this stdin MCP server, Claude must be running on the local machine, not in the cloud.
     - I think this means you must choose the 'Chat' option and NOT the 'Cowork' option when starting the chat.
-    - The Cowork option seems to (at least sometimes) run in a cloud sandbox that does not have access to the local machine.
+      The Cowork option seems to (at least sometimes?) run in a cloud sandbox that does not have access to the local machine.
 ## Requirements
 
 - Node.js 18+
@@ -37,11 +36,11 @@ questions — it picks the right tool and arguments on its own.
 ## Setup/Installation
 
 In Claude Desktop
-    - Click button with your name in the bottom left corner
-    - Click 'Settings'
-    - Click 'Developers'
-    - Click 'Edit Config'
-    - Double click 'claude_desktop_config.json' to open editor
+- Click button with your name in the bottom left corner
+- Click 'Settings'
+- Click 'Developers'
+- Click 'Edit Config'
+- Double click 'claude_desktop_config.json' to open editor
 
 Edit 'claude_desktop_config.json' to add server as follows
 
