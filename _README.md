@@ -32,18 +32,18 @@ questions — it picks the right tool and arguments on its own.
 - Node.js 18+
     - I think this is automatically installed when you install Claude Desktop
 - One or more Paratext project folders on disk (each containing a `Settings.xml`
-  and `*.U?SFM` book files)
+  and USFM book files)
 
 ## Setup/Installation
 
 In Claude Desktop
-    - Click your name in the bottom left corner
+    - Click button with your name in the bottom left corner
     - Click 'Settings'
     - Click 'Developers'
     - Click 'Edit Config'
     - Double click 'claude_desktop_config.json' to open editor
 
-Edit 'claude_desktop_config.json' to add server
+Edit 'claude_desktop_config.json' to add server as follows
 
 ```json
 {
@@ -66,7 +66,7 @@ Ask Claude: "What Paratext projects are available?"
     - Successful outcome is runs and then waits for terminal input. Control C to terminate.
     - If it prints error messages instead, there is some reason we cannot access the ptx-mcp NPM package.
 - After restarting Claude, go to Settings/Developers. Should show ptx-mcp as a Local MCP Server. If not something went wrong with loading.
-- Ask Claude where the log file showing Local MCP server loading errors is and take a look.
+- If Settings/Developers says "ptx-mcp failed", click "View Logs" to see why.
 
 ### Installation Notes
 
@@ -79,7 +79,7 @@ need to add an additional argument pointing to that location.
 
 ### To run ptx-mcp from source in development mode
 
-To run from client locally installed source
+To run from locally installed source
 - cd /path/to/source
 - git clone https://github.com/Nathan22Miles/PtxMCP
 - cd PtxMCP
