@@ -3,7 +3,8 @@
 MCP (Model Context Protocol) server that reads scripture text directly from
 local Paratext project folders (USFM files) and exposes it as tools an LLM can call.
 It can also return interlinear glosses (each word of a verse paired with its gloss)
-from a project's Paratext interlinear data.
+from a project's Paratext interlinear data, and search Paratext's Biblical Terms
+list for Hebrew/Greek terms and the verses they occur in.
 
 ## Example prompts supported
 
@@ -22,12 +23,17 @@ questions — it picks the right tool and arguments on its own.
 - "What interlinear gloss languages does AKG-Uni have?"
 - "Show me the English interlinear glosses for Romans 1:1 in AKG-Uni."
 - "Get the AKG-Uni interlinear for ROM 1:1-5; 3:23; 6:23."
+- "What is the NT Greek word for 'gospel'?"
+- "Where does εὐαγγέλιον occur in Romans? Show the AKG-Uni interlinear for those verses."
 
 ## Caveats
 - This code
     - Has only had very limited testing so far. It did work for me on Mac and Windows.
     - Has only been tested with Claude Desktop.
     - Does not support access to Paratext resource projects, e.g. RVR80. 
+    - Biblical Terms tools look for `BiblicalTerms.xml` in the Paratext 9 install folder
+      (`C:\Program Files (x86)\Paratext 9\Terms\Lists` or `C:\Program Files\Paratext 9\Terms\Lists`),
+      then in `myParatext/Lists` when running from source. These install locations are not yet verified.
 - In order for Claude to access this stdin MCP server, Claude must be running on the local machine, not in the cloud.
     - I think this means you must choose the 'Chat' option and NOT the 'Cowork' option when starting the chat.
       The Cowork option seems to (at least sometimes?) run in a cloud sandbox that does not have access to the local machine.
@@ -196,6 +202,43 @@ result: `[missing: ...]`.
 
 See `src/md/it/it_spec.md` for details of the Paratext interlinear data layout.
 
+### `list-bt`
+
+Searches Paratext's Biblical Terms list (Hebrew, Aramaic and Greek terms).
+
+- `search` — text found anywhere in a term's English gloss, original-language
+  lemma, transliteration or definition (case- and diacritics-insensitive), or an
+  exact Strong's number such as `G2098`
+- `book` — optional 3-letter book code; only terms that occur in that book
+
+Output is JSON, one entry per matching term, in list order (no limit):
+
+```json
+[{"id":"εὐαγγέλιον","gloss":"good news; gospel","transliteration":"euangelion","language":"greek","category":"MI","strong":["G2098"],"refCount":73}]
+```
+
+`category` is one of `PN` (names), `RE` (realia), `AT` (attributes), `MI`
+(miscellaneous), `FA` (fauna), `BE` (beings), `FL` (flora), `RI` (rituals).
+`refCount` is the number of verses the term occurs in.
+
+### `get-bt-refs`
+
+Returns the verses where a term occurs, as a reference string that can be passed
+directly as `refs` to `get-it`.
+
+- `id` — term id from `list-bt` (including any `-1`, `-2` suffix)
+- Optional filter, in one of two forms (not both):
+    - `book` plus optional `startChapter` / `startVerse` / `endChapter` / `endVerse`
+    - `refs` — semicolon-separated ranges, same format as in `get-it`
+
+Output example: `ROM 1:1; 1:9; 1:16; 2:16; 10:16` — one entry per verse, in
+canonical order, book omitted when it repeats. Empty if no verses match.
+
+References use original-language (Hebrew/Greek) verse numbering, which differs
+from some translations in a few places (e.g. Hebrew Malachi 3:19 = English 4:1).
+
+See `src/md/bt/bt_spec.md` for details of the Biblical Terms data layout.
+
 ## Development
 
 ```bash
@@ -204,7 +247,9 @@ npm run build   # compile TypeScript to dist/
 npm test        # run the Vitest suite (uses the myParatextProjects/ fixture data)
 ```
 
-Tests read Paratext project data from the `myParatextProjects/` folder.
+Tests read Paratext project data from the `myParatextProjects/` folder and the
+Biblical Terms list from `myParatext/Lists/`. Tests that need git-ignored data
+(`AKG-Uni`, `myParatext/Lists`) are skipped when it is not present.
 
 ## Acknowledgements
 

@@ -39,14 +39,14 @@ export interface InterlinearResult {
     missing: string[]
 }
 
-interface Span {
+export interface Span {
     startChapter?: number
     startVerse?: number
     endChapter?: number
     endVerse?: number
 }
 
-interface BookSpan {
+export interface BookSpan {
     book: string
     span: Span
 }

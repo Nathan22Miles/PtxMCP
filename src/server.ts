@@ -1,5 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import { z } from "zod"
+import { getTermRefs, resolveBiblicalTermsPath, searchTerms } from "./biblicalTerms.js"
 import { getInterlinear, listInterlinearLanguages } from "./interlinear.js"
 import { getScripture, listAvailableBooks, listAvailableProjects } from "./scripture.js"
 
@@ -147,6 +148,64 @@ export function createServer(projectsRoot: string): McpServer {
                 content.push({ type: "text" as const, text: `[missing: ${result.missing.join("; ")}]` })
             }
             return { content }
+        }
+    )
+
+    server.registerTool(
+        "list-bt",
+        {
+            title: "Search Biblical Terms",
+            description:
+                "Search Paratext's Biblical Terms list (Hebrew, Aramaic and Greek terms). Matches the search string " +
+                "anywhere in a term's English gloss, original-language lemma (id), transliteration or definition, " +
+                "ignoring case and diacritics, or exactly matches a Strong's number (e.g. G2098). " +
+                "Returns JSON: [{id, gloss, transliteration, language, category, strong, refCount}, ...]. " +
+                "Use the id with get-bt-refs.",
+            inputSchema: {
+                search: z.string().describe("Text to search for, e.g. 'gospel', 'euangelion', or 'G2098'"),
+                book: z.string().length(3).optional().describe("Only terms that occur in this 3-letter USFM book code")
+            }
+        },
+        async ({ search, book }) => {
+            const terms = searchTerms(resolveBiblicalTermsPath(), search, book)
+            return { content: [{ type: "text", text: JSON.stringify(terms) }] }
+        }
+    )
+
+    server.registerTool(
+        "get-bt-refs",
+        {
+            title: "Get Biblical Term references",
+            description:
+                "Get the verses where a Biblical Term occurs, as a semicolon-separated reference string " +
+                "(e.g. 'ROM 1:1; 1:9; 1CO 9:14') that can be passed as refs to get-it. " +
+                "Optionally restrict to a book/chapter/verse range or to refs. References use original-language " +
+                "(Hebrew/Greek) versification.",
+            inputSchema: {
+                id: z.string().describe("Term id (original-language lemma, incl. any -N suffix) from list-bt"),
+                book: z.string().length(3).optional().describe("Only refs in this 3-letter USFM book code"),
+                startChapter: z.number().int().positive().optional().describe("Starting chapter (omit for the whole book)"),
+                startVerse: z.number().int().positive().optional().describe("Starting verse (omit for the whole chapter)"),
+                endChapter: z.number().int().positive().optional().describe("Ending chapter (defaults to startChapter)"),
+                endVerse: z.number().int().positive().optional().describe("Ending verse (defaults to the end of endChapter)"),
+                refs: z
+                    .string()
+                    .optional()
+                    .describe("Only refs inside these semicolon-separated ranges, e.g. 'ROM 1; 2; MAT 5:1-12'")
+            }
+        },
+        async ({ id, book, startChapter, startVerse, endChapter, endVerse, refs }) => {
+            const text = getTermRefs({
+                termsPath: resolveBiblicalTermsPath(),
+                id,
+                book,
+                startChapter,
+                startVerse,
+                endChapter,
+                endVerse,
+                refs
+            })
+            return { content: [{ type: "text", text }] }
         }
     )
 
