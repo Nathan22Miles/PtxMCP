@@ -41,7 +41,7 @@ export interface ScriptureResult {
 
 const bookCache = new Map<string, ParsedBook>()
 
-function loadBook(projectDir: string, projectId: string, book: string): ParsedBook {
+export function loadBook(projectDir: string, projectId: string, book: string): ParsedBook {
     const cacheKey = `${projectDir}::${book}`
     const cached = bookCache.get(cacheKey)
     if (cached) return cached

@@ -2,6 +2,8 @@
 
 MCP (Model Context Protocol) server that reads scripture text directly from
 local Paratext project folders (USFM files) and exposes it as tools an LLM can call.
+It can also return interlinear glosses (each word of a verse paired with its gloss)
+from a project's Paratext interlinear data.
 
 ## Example prompts supported
 
@@ -17,6 +19,9 @@ questions — it picks the right tool and arguments on its own.
 - "Get James 1 from WEB and BTBK together, and skip any verses that are missing in either one."
 - "Read Genesis 1:26 through 2:3 from BTBK."
 - "Does BTBK have a translation of the Gospel of John? If so, show me chapter 1."
+- "What interlinear gloss languages does AKG-Uni have?"
+- "Show me the English interlinear glosses for Romans 1:1 in AKG-Uni."
+- "Get the AKG-Uni interlinear for ROM 1:1-5; 3:23; 6:23."
 
 ## Caveats
 - This code
@@ -149,6 +154,47 @@ BTBR GEN 1:2 the earth did not exist yet, there still was nothing...
 
 Verse bridges in the source text (e.g. `\v 6-7`) are returned as a single line
 labeled `6-7`, not duplicated per verse number.
+
+### `list-it`
+
+Lists the interlinear gloss language codes (e.g. `en`, `en-US`) that have
+interlinear data in a project (from its `Interlinear_<language>` folders).
+
+- `project` — project id (folder name)
+- `book` — optional 3-letter book code; only list languages with interlinear data for that book
+
+### `get-it`
+
+Returns interlinear text: each word of the verse paired with its gloss in the
+chosen gloss language.
+
+- `project` — project id (folder name)
+- `language` — gloss language code (see `list-it`)
+- Verses, in one of two forms (not both):
+    - `book` plus optional `startChapter` / `startVerse` / `endChapter` / `endVerse`,
+      same meaning as in `get-scripture`
+    - `refs` — semicolon-separated references, e.g. `ROM 1:1; 3:5-7; 1:30-2:2; MAT 5`.
+      A reference without a book reuses the previous reference's book.
+- `allowPartial` — if `true`, omits missing books/verses and returns empty
+  `words` when interlinear data is missing, instead of returning an error
+
+Output is JSON, one entry per verse:
+
+```json
+[{"ref":"ROM 1:1","words":[["Kɨ","I"],["Pol","Paul"],["kɨ","I"],["gemsua","for you.pl"]]}]
+```
+
+- Glosses are the whole-word glosses chosen in Paratext's interlinearizer.
+- A gloss is `null` when the word has only a morpheme (stem/affix) analysis.
+- Words that have not been analyzed, and phrase glosses, are omitted.
+- If verse text was edited after glossing, words come from the stored analysis
+  and may be slightly out of order.
+- A verse with no interlinear data is returned with an empty `words` list.
+
+When `allowPartial` reports missing items, they are listed in a second text
+result: `[missing: ...]`.
+
+See `src/md/it/it_spec.md` for details of the Paratext interlinear data layout.
 
 ## Development
 

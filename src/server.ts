@@ -1,5 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import { z } from "zod"
+import { getInterlinear, listInterlinearLanguages } from "./interlinear.js"
 import { getScripture, listAvailableBooks, listAvailableProjects } from "./scripture.js"
 
 export function createServer(projectsRoot: string): McpServer {
@@ -76,6 +77,76 @@ export function createServer(projectsRoot: string): McpServer {
                 ? `${result.text}\n\n[missing: ${result.missing.join("; ")}]`
                 : result.text
             return { content: [{ type: "text", text }] }
+        }
+    )
+
+    server.registerTool(
+        "list-it",
+        {
+            title: "List interlinear gloss languages",
+            description:
+                "List the gloss language codes (e.g. en, en-US) that have interlinear data in a Paratext project. " +
+                "If a book is given, only languages with interlinear data for that book are listed.",
+            inputSchema: {
+                project: z.string().describe("Paratext project id (folder name)"),
+                book: z.string().length(3).optional().describe("3-letter USFM book code, e.g. GEN, MAT, 1CO")
+            }
+        },
+        async ({ project, book }) => {
+            const languages = listInterlinearLanguages(projectsRoot, project, book)
+            return { content: [{ type: "text", text: languages.join("\n") }] }
+        }
+    )
+
+    server.registerTool(
+        "get-it",
+        {
+            title: "Get interlinear text",
+            description:
+                "Get interlinear glosses for verses in a Paratext project: each word of the verse text paired with " +
+                "its gloss in the given language. Specify verses either with book plus optional chapter/verse range " +
+                "(same as get-scripture) or with refs, a semicolon-separated list such as 'ROM 1:1; 3:5-7; MAT 5'. " +
+                "Returns JSON: [{\"ref\":\"ROM 1:1\",\"words\":[[\"Kɨ\",\"I\"],...]},...]. " +
+                "A gloss is null when the word is analyzed but has no whole-word gloss. Unanalyzed words are omitted.",
+            inputSchema: {
+                project: z.string().describe("Paratext project id (folder name)"),
+                language: z.string().describe("Gloss language code, e.g. en (see list-it)"),
+                book: z.string().length(3).optional().describe("3-letter USFM book code (omit when using refs)"),
+                startChapter: z.number().int().positive().optional().describe("Starting chapter (omit for the whole book)"),
+                startVerse: z.number().int().positive().optional().describe("Starting verse (omit for the whole chapter)"),
+                endChapter: z.number().int().positive().optional().describe("Ending chapter (defaults to startChapter)"),
+                endVerse: z.number().int().positive().optional().describe("Ending verse (defaults to the last verse of endChapter)"),
+                refs: z
+                    .string()
+                    .optional()
+                    .describe(
+                        "Semicolon-separated references instead of book/chapter/verse, e.g. 'ROM 1:1; 3:5-7; 1:30-2:2; MAT 5'. " +
+                        "Refs without a book reuse the previous ref's book."
+                    ),
+                allowPartial: z
+                    .boolean()
+                    .optional()
+                    .describe("If true, omit missing verses/books and return empty words for missing interlinear data instead of raising an error")
+            }
+        },
+        async ({ project, language, book, startChapter, startVerse, endChapter, endVerse, refs, allowPartial }) => {
+            const result = getInterlinear({
+                projectsRoot,
+                project,
+                language,
+                book,
+                startChapter,
+                startVerse,
+                endChapter,
+                endVerse,
+                refs,
+                allowPartial
+            })
+            const content = [{ type: "text" as const, text: JSON.stringify(result.verses) }]
+            if (result.missing.length > 0) {
+                content.push({ type: "text" as const, text: `[missing: ${result.missing.join("; ")}]` })
+            }
+            return { content }
         }
     )
 
