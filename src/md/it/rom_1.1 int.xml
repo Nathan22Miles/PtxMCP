@@ -1,0 +1,298 @@
+ <item>
+      <string>ROM 1:1</string>
+      <VerseData Hash="0C226435">
+        <Cluster>
+          <Range Index="125" Length="18" />
+          <Lexeme Id="Phrase:mbɨsevisi gumaghan" GlossId="/uZzD9+r" />
+        </Cluster>
+        <Cluster>
+          <Range Index="183" Length="13" />
+          <Lexeme Id="Phrase:akaman aghuuŋ" GlossId="uSugewLr" />
+        </Cluster>
+        <Cluster>
+          <Range Index="5" Length="2" />
+          <Lexeme Id="Word:kɨ" GlossId="258Voebn" />
+        </Cluster>
+        <Cluster>
+          <Range Index="8" Length="3" />
+          <Lexeme Id="Word:pol" GlossId="2xbvFiap" />
+        </Cluster>
+        <Cluster>
+          <Range Index="13" Length="2" />
+          <Lexeme Id="Word:kɨ" GlossId="258Voebn" />
+        </Cluster>
+        <Cluster>
+          <Range Index="16" Length="6" />
+          <Lexeme Id="Word:gemsua" GlossId="gZ+lO3Nx" />
+        </Cluster>
+        <Cluster>
+          <Range Index="23" Length="9" />
+          <Lexeme Id="Word:mbɨgharan" GlossId="jxwgt/z9" />
+        </Cluster>
+        <Cluster>
+          <Range Index="33" Length="3" />
+          <Lexeme Id="Word:kav" GlossId="JeaR5LAe" />
+        </Cluster>
+        <Cluster>
+          <Range Index="37" Length="5" />
+          <Lexeme Id="Word:osɨri" GlossId="oerO6deJ" />
+        </Cluster>
+        <Cluster>
+          <Range Index="44" Length="2" />
+          <Lexeme Id="Word:kɨ" GlossId="258Voebn" />
+        </Cluster>
+        <Cluster>
+          <Range Index="47" Length="5" />
+          <Lexeme Id="Word:krais" GlossId="Onu5zxab" />
+        </Cluster>
+        <Cluster>
+          <Range Index="53" Length="7" />
+          <Lexeme Id="Word:iesusɨn" GlossId="jmP44GYc" />
+        </Cluster>
+        <Cluster>
+          <Range Index="61" Length="7" />
+          <Lexeme Id="Word:iŋaaran" GlossId="qno1auST" />
+        </Cluster>
+        <Cluster>
+          <Range Index="69" Length="8" />
+          <Lexeme Id="Word:gumaghan" GlossId="0SCigBD3" />
+        </Cluster>
+        <Cluster>
+          <Range Index="78" Length="3" />
+          <Lexeme Id="Word:mav" GlossId="JQ6rTD3T" />
+        </Cluster>
+        <Cluster>
+          <Range Index="83" Length="5" />
+          <Lexeme Id="Word:krais" GlossId="Onu5zxab" />
+        </Cluster>
+        <Cluster>
+          <Range Index="89" Length="5" />
+          <Lexeme Id="Word:iesus" GlossId="/rcmJhry" />
+        </Cluster>
+        <Cluster>
+          <Range Index="95" Length="3" />
+          <Lexeme Id="Word:nan" GlossId="B+kUmVlv" />
+        </Cluster>
+        <Cluster>
+          <Range Index="99" Length="6" />
+          <Lexeme Id="Word:dɨɨgha" GlossId="LJcaCpmL" />
+        </Cluster>
+        <Cluster>
+          <Range Index="106" Length="9" />
+          <Lexeme Id="Word:kamaghsue" GlossId="N2w6oM3B" />
+        </Cluster>
+        <Cluster>
+          <Range Index="118" Length="2" />
+          <Lexeme Id="Word:nɨ" GlossId="SOSV6dOz" />
+        </Cluster>
+        <Cluster>
+          <Range Index="121" Length="3" />
+          <Lexeme Id="Word:nan" GlossId="QJJ1cupz" />
+        </Cluster>
+        <Cluster>
+          <Range Index="125" Length="9" />
+          <Lexeme Id="Word:mbɨsevisi" GlossId="045WaPqm" />
+        </Cluster>
+        <Cluster>
+          <Range Index="135" Length="8" />
+          <Lexeme Id="Word:gumaghan" GlossId="0SCigBD3" />
+        </Cluster>
+        <Cluster>
+          <Range Index="144" Length="3" />
+          <Lexeme Id="Word:mɨn" GlossId="rWxiGObQ" />
+        </Cluster>
+        <Cluster>
+          <Range Index="148" Length="6" />
+          <Lexeme Id="Word:ikaami" GlossId="hKGP/8dz" />
+        </Cluster>
+        <Cluster>
+          <Range Index="157" Length="3" />
+          <Lexeme Id="Word:ana" GlossId="0afXBEWT" />
+        </Cluster>
+        <Cluster>
+          <Range Index="165" Length="10" />
+          <Lexeme Id="Word:mbɨsevigha" GlossId="GRjt4tLX" />
+        </Cluster>
+        <Cluster>
+          <Range Index="177" Length="5" />
+          <Lexeme Id="Word:gotɨn" GlossId="J+4TZwti" />
+        </Cluster>
+        <Cluster>
+          <Range Index="183" Length="6" />
+          <Lexeme Id="Word:akaman" GlossId="UGLEeTGx" />
+        </Cluster>
+        <Cluster>
+          <Range Index="190" Length="6" />
+          <Lexeme Id="Word:aghuuŋ" GlossId="Q6i8rKhr" />
+        </Cluster>
+        <Cluster>
+          <Range Index="197" Length="11" />
+          <Lexeme Id="Word:ukunaŋgamir" GlossId="kaqDMa3R" />
+        </Cluster>
+        <Cluster>
+          <Range Index="209" Length="7" />
+          <Lexeme Id="Word:iŋaaran" GlossId="qno1auST" />
+        </Cluster>
+        <Cluster>
+          <Range Index="217" Length="5" />
+          <Lexeme Id="Word:naŋga" GlossId="ATojCEBp" />
+        </Cluster>
+        <Cluster>
+          <Range Index="223" Length="6" />
+          <Lexeme Id="Word:anɨɨŋi" GlossId="5KUCCuSL" />
+        </Cluster>
+        <Cluster>
+          <Range Index="5" Length="2" />
+          <Lexeme Id="Stem:kɨ" GlossId="Y79GvzSm" />
+        </Cluster>
+        <Cluster>
+          <Range Index="8" Length="3" />
+          <Lexeme Id="Stem:pol" GlossId="rGxd/zyo" />
+        </Cluster>
+        <Cluster>
+          <Range Index="13" Length="2" />
+          <Lexeme Id="Stem:kɨ" GlossId="Y79GvzSm" />
+        </Cluster>
+        <Cluster>
+          <Range Index="16" Length="6" />
+          <Lexeme Id="Stem:gen" GlossId="/I2hBGcI" />
+          <Lexeme Id="Suffix:msua" GlossId="jWL8IoJm" />
+        </Cluster>
+        <Cluster>
+          <Range Index="23" Length="9" />
+          <Lexeme Id="Stem:mbɨghara" GlossId="yKhlR1Hc" />
+          <Lexeme Id="Suffix:n" GlossId="fvZxdgVA" />
+        </Cluster>
+        <Cluster>
+          <Range Index="33" Length="3" />
+          <Lexeme Id="Stem:kav" GlossId="0vCVwPpY" />
+        </Cluster>
+        <Cluster>
+          <Range Index="37" Length="5" />
+          <Lexeme Id="Stem:osɨri" GlossId="OdWlnp99" />
+        </Cluster>
+        <Cluster>
+          <Range Index="44" Length="2" />
+          <Lexeme Id="Stem:kɨ" GlossId="Y79GvzSm" />
+        </Cluster>
+        <Cluster>
+          <Range Index="47" Length="5" />
+          <Lexeme Id="Stem:krais" GlossId="OgOMtL7R" />
+        </Cluster>
+        <Cluster>
+          <Range Index="53" Length="7" />
+          <Lexeme Id="Stem:iesusɨ" GlossId="CNdp7mRP" />
+          <Lexeme Id="Suffix:n" GlossId="fvZxdgVA" />
+        </Cluster>
+        <Cluster>
+          <Range Index="61" Length="7" />
+          <Lexeme Id="Stem:iŋaara" GlossId="+0gq3YAU" />
+          <Lexeme Id="Suffix:n" GlossId="fvZxdgVA" />
+        </Cluster>
+        <Cluster>
+          <Range Index="69" Length="8" />
+          <Lexeme Id="Stem:gumagha" GlossId="6QMe/UiE" />
+          <Lexeme Id="Suffix:n" GlossId="fvZxdgVA" />
+        </Cluster>
+        <Cluster>
+          <Range Index="78" Length="3" />
+          <Lexeme Id="Stem:mav" GlossId="xuPNtq2J" />
+        </Cluster>
+        <Cluster>
+          <Range Index="83" Length="5" />
+          <Lexeme Id="Stem:krais" GlossId="OgOMtL7R" />
+        </Cluster>
+        <Cluster>
+          <Range Index="89" Length="5" />
+          <Lexeme Id="Stem:iesus" GlossId="rHuSWeT/" />
+        </Cluster>
+        <Cluster>
+          <Range Index="95" Length="3" />
+          <Lexeme Id="Stem:nan" GlossId="DBHbh5EE" />
+        </Cluster>
+        <Cluster>
+          <Range Index="99" Length="6" />
+          <Lexeme Id="Stem:dɨɨ" GlossId="T66B7mb1" />
+          <Lexeme Id="Suffix:gha" GlossId="5A2USeG3" />
+        </Cluster>
+        <Cluster>
+          <Range Index="106" Length="9" />
+          <Lexeme Id="Stem:kamaghsue" GlossId="OH6XURs6" />
+        </Cluster>
+        <Cluster>
+          <Range Index="118" Length="2" />
+          <Lexeme Id="Stem:nɨ" GlossId="lhHGh9p9" />
+        </Cluster>
+        <Cluster>
+          <Range Index="121" Length="3" />
+          <Lexeme Id="Stem:nan" GlossId="DBHbh5EE" />
+        </Cluster>
+        <Cluster>
+          <Range Index="125" Length="9" />
+          <Lexeme Id="Stem:mbɨsevisi" GlossId="dCtxFnen" />
+        </Cluster>
+        <Cluster>
+          <Range Index="135" Length="8" />
+          <Lexeme Id="Stem:gumagha" GlossId="6QMe/UiE" />
+          <Lexeme Id="Suffix:n" GlossId="fvZxdgVA" />
+        </Cluster>
+        <Cluster>
+          <Range Index="144" Length="3" />
+          <Lexeme Id="Stem:mɨn" GlossId="q7DVjgIx" />
+        </Cluster>
+        <Cluster>
+          <Range Index="148" Length="6" />
+          <Lexeme Id="Stem:ikɨ" GlossId="3GvwnIeq" />
+          <Lexeme Id="Suffix:ami" GlossId="a8PABuvh" />
+        </Cluster>
+        <Cluster>
+          <Range Index="157" Length="3" />
+          <Lexeme Id="Stem:ana" GlossId="rzDJR68U" />
+        </Cluster>
+        <Cluster>
+          <Range Index="161" Length="3" />
+          <Lexeme Id="Stem:nan" GlossId="DBHbh5EE" />
+        </Cluster>
+        <Cluster>
+          <Range Index="165" Length="10" />
+          <Lexeme Id="Stem:mbɨsevi" GlossId="u3nxmsVk" />
+          <Lexeme Id="Suffix:gha" GlossId="5A2USeG3" />
+        </Cluster>
+        <Cluster>
+          <Range Index="177" Length="5" />
+          <Lexeme Id="Stem:gotɨ" GlossId="pzjw2AQI" />
+          <Lexeme Id="Suffix:n" GlossId="fvZxdgVA" />
+        </Cluster>
+        <Cluster>
+          <Range Index="183" Length="6" />
+          <Lexeme Id="Stem:akama" GlossId="P8R/Wlp2" />
+          <Lexeme Id="Suffix:n" GlossId="fvZxdgVA" />
+        </Cluster>
+        <Cluster>
+          <Range Index="197" Length="11" />
+          <Lexeme Id="Stem:ukun" GlossId="eoKj9/oq" />
+          <Lexeme Id="Suffix:aŋgamir" GlossId="unkJ4p19" />
+        </Cluster>
+        <Cluster>
+          <Range Index="209" Length="7" />
+          <Lexeme Id="Stem:iŋaara" GlossId="+0gq3YAU" />
+          <Lexeme Id="Suffix:n" GlossId="fvZxdgVA" />
+        </Cluster>
+        <Cluster>
+          <Range Index="217" Length="5" />
+          <Lexeme Id="Stem:naŋga" GlossId="us4cHgqp" />
+        </Cluster>
+        <Cluster>
+          <Range Index="223" Length="6" />
+          <Lexeme Id="Stem:anɨɨŋi" GlossId="q6maLRRU" />
+        </Cluster>
+        <Cluster>
+          <Range Index="161" Length="3" />
+          <Lexeme Id="Word:nam" GlossId="FeNWj0RT" />
+        </Cluster>
+        <Cluster>
+          <Range Index="190" Length="6" />
+          <Lexeme Id="Stem:aghuuŋ" GlossId="fFx04JM1" />
+        </Cluster>
+      </VerseData>
+    </item>
