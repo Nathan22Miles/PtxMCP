@@ -1,11 +1,11 @@
 import fs from "node:fs"
 import path from "node:path"
-import { isBookCode } from "./books.js"
+import { bookNumberFromCode, isBookCode } from "./books.js"
 import { getProjectDir } from "./discovery.js"
 import { BookNotFoundError, InvalidReferenceError, loadBook, VerseNotFoundError } from "./scripture.js"
 import { indexProjectBooks, ParsedBook } from "./usfmBook.js"
 
-// Interlinear data layout is documented in src/md/it/it_spec.md.
+// Interlinear data layout is documented in src/md/it/it_spec.md; best-effort glossing in it_update1.md.
 
 export class InterlinearNotFoundError extends Error {
     constructor(message: string) {
@@ -14,7 +14,13 @@ export class InterlinearNotFoundError extends Error {
     }
 }
 
-export type WordGloss = [string, string | null]
+// Where a word's gloss came from: approved in this verse, guessed from the corpus,
+// first sense of a matching lexicon entry, or none.
+export type GlossSource = "a" | "g" | "l" | "-"
+
+export type WordGloss = [string, string] | [string, string, GlossSource]
+
+const NO_GLOSS = "_"
 
 export interface InterlinearVerse {
     ref: string
@@ -32,6 +38,7 @@ export interface InterlinearRequest {
     endVerse?: number
     refs?: string
     allowPartial?: boolean
+    showSource?: boolean
 }
 
 export interface InterlinearResult {
@@ -83,7 +90,6 @@ interface InterlinearItem {
 interface InterlinearBook {
     // key: "C:label", e.g. "1:9-10"
     items: Map<string, InterlinearItem>
-    byChapter: Map<number, InterlinearItem[]>
 }
 
 interface Lexicon {
@@ -91,6 +97,8 @@ interface Lexicon {
     byLexemeSense: Map<string, string>
     // senseId -> gloss, only for sense ids used by a single lexeme
     bySense: Map<string, string>
+    // lowercased NFC form -> gloss language -> first non-empty sense gloss (Word entries win over other types)
+    byForm: Map<string, Map<string, string>>
 }
 
 const LANGUAGE_PATTERN = /^[A-Za-z0-9_-]+$/
@@ -144,6 +152,8 @@ function parseLexicon(xml: string): Lexicon {
     const byLexemeSense = new Map<string, string>()
     const senseGloss = new Map<string, string>()
     const senseCount = new Map<string, number>()
+    const wordForms = new Map<string, Map<string, string>>()
+    const otherForms = new Map<string, Map<string, string>>()
 
     const itemPattern = /<Lexeme\b([^>]*)\/>([\s\S]*?)<\/item>/g
     const sensePattern = /<Sense\b([^>]*)>\s*<Gloss\b([^>]*?)(?:\/>|>([^<]*)<\/Gloss>)/g
@@ -151,6 +161,8 @@ function parseLexicon(xml: string): Lexicon {
         const type = attr(item[1], "Type")
         const form = attr(item[1], "Form")
         if (!type || form === undefined) continue
+        const forms = type === "Word" ? wordForms : otherForms
+        const formKey = normalizeForm(form)
         for (const sense of item[2].matchAll(sensePattern)) {
             const senseId = attr(sense[1], "Id")
             if (!senseId) continue
@@ -158,19 +170,30 @@ function parseLexicon(xml: string): Lexicon {
             byLexemeSense.set(`${type}:${form}#${senseId}`, gloss)
             senseGloss.set(senseId, gloss)
             senseCount.set(senseId, (senseCount.get(senseId) ?? 0) + 1)
+
+            const language = attr(sense[2], "Language")
+            if (!language || !gloss.trim()) continue
+            const firstByLanguage = forms.get(formKey) ?? new Map<string, string>()
+            if (!firstByLanguage.has(language)) firstByLanguage.set(language, gloss)
+            forms.set(formKey, firstByLanguage)
         }
+    }
+
+    const byForm = new Map(otherForms)
+    for (const [formKey, firstByLanguage] of wordForms) {
+        byForm.set(formKey, new Map([...(otherForms.get(formKey) ?? []), ...firstByLanguage]))
     }
 
     const bySense = new Map<string, string>()
     for (const [senseId, gloss] of senseGloss) {
         if (senseCount.get(senseId) === 1) bySense.set(senseId, gloss)
     }
-    return { byLexemeSense, bySense }
+    return { byLexemeSense, bySense, byForm }
 }
 
 function loadLexicon(projectDir: string): Lexicon {
     const filePath = path.join(projectDir, "lexicon.xml")
-    if (!fs.existsSync(filePath)) return { byLexemeSense: new Map(), bySense: new Map() }
+    if (!fs.existsSync(filePath)) return { byLexemeSense: new Map(), bySense: new Map(), byForm: new Map() }
     return cachedByMtime(lexiconCache, filePath, () => parseLexicon(fs.readFileSync(filePath, "utf8")))
 }
 
@@ -187,7 +210,6 @@ const interlinearCache = new Map<string, { mtimeMs: number; value: InterlinearBo
 
 function parseInterlinear(xml: string): InterlinearBook {
     const items = new Map<string, InterlinearItem>()
-    const byChapter = new Map<number, InterlinearItem[]>()
 
     const itemPattern = /<item>\s*<string>([^<]*)<\/string>([\s\S]*?)<\/item>/g
     const clusterPattern = /<Cluster>([\s\S]*?)<\/Cluster>/g
@@ -227,11 +249,8 @@ function parseInterlinear(xml: string): InterlinearBook {
 
         const parsed: InterlinearItem = { chapter, label, ...range, clusters }
         items.set(`${chapter}:${label}`, parsed)
-        const chapterItems = byChapter.get(chapter) ?? []
-        chapterItems.push(parsed)
-        byChapter.set(chapter, chapterItems)
     }
-    return { items, byChapter }
+    return { items }
 }
 
 function interlinearDir(projectDir: string, language: string): string {
@@ -242,23 +261,77 @@ function interlinearFile(projectDir: string, language: string, book: string): st
     return path.join(interlinearDir(projectDir, language), `${INTERLINEAR_DIR_PREFIX}${language}_${book}.xml`)
 }
 
-function loadInterlinear(projectDir: string, projectId: string, language: string, book: string): InterlinearBook {
-    const dir = interlinearDir(projectDir, language)
-    if (!fs.existsSync(dir)) {
-        throw new InterlinearNotFoundError(`No interlinear data for language ${language} in project ${projectId}`)
-    }
-    const filePath = interlinearFile(projectDir, language, book)
-    if (!fs.existsSync(filePath)) {
-        throw new InterlinearNotFoundError(`No ${language} interlinear data for ${book} in project ${projectId}`)
-    }
+function loadInterlinearFile(filePath: string): InterlinearBook {
     return cachedByMtime(interlinearCache, filePath, () => parseInterlinear(fs.readFileSync(filePath, "utf8")))
 }
 
-function findItem(data: InterlinearBook, target: VerseTarget): InterlinearItem | undefined {
-    const exact = data.items.get(`${target.chapter}:${target.label}`)
-    if (exact) return exact
-    // Bridges may differ between the text and the interlinear data.
-    return data.byChapter.get(target.chapter)?.find((item) => target.start <= item.end && item.start <= target.end)
+// Interlinear data for a book, or undefined if the language has no file for it.
+function loadInterlinear(projectDir: string, language: string, book: string): InterlinearBook | undefined {
+    const filePath = interlinearFile(projectDir, language, book)
+    return fs.existsSync(filePath) ? loadInterlinearFile(filePath) : undefined
+}
+
+// ---------- corpus: most common gloss per word form ----------
+
+interface Corpus {
+    signature: string
+    lexicon: Lexicon
+    // lowercased NFC form -> most common gloss
+    glosses: Map<string, string>
+}
+
+const corpusCache = new Map<string, Corpus>()
+
+function interlinearFiles(dir: string, language: string): string[] {
+    const prefix = `${INTERLINEAR_DIR_PREFIX}${language}_`
+    const bookOf = (file: string) => file.slice(prefix.length, -".xml".length).toUpperCase()
+    const order = (file: string) => bookNumberFromCode(bookOf(file)) ?? Number.MAX_SAFE_INTEGER
+    return fs
+        .readdirSync(dir)
+        .filter((file) => file.startsWith(prefix) && file.toLowerCase().endsWith(".xml"))
+        // Canon order so ties resolve to the first gloss seen in canon order.
+        .sort((a, b) => order(a) - order(b) || a.localeCompare(b))
+        .map((file) => path.join(dir, file))
+}
+
+// Most common gloss for each word form across all books of a gloss language (it_update1.md).
+function loadCorpus(dir: string, language: string, lexicon: Lexicon): Map<string, string> {
+    const files = interlinearFiles(dir, language)
+    const signature = files.map((file) => `${file}:${fs.statSync(file).mtimeMs}`).join("|")
+    const cached = corpusCache.get(dir)
+    if (cached && cached.signature === signature && cached.lexicon === lexicon) return cached.glosses
+
+    // form -> gloss -> count; Map insertion order records first-seen order for ties.
+    const counts = new Map<string, Map<string, number>>()
+    for (const file of files) {
+        for (const item of loadInterlinearFile(file).items.values()) {
+            for (const cluster of item.clusters) {
+                if (cluster.excluded || !isWordCluster(cluster)) continue
+                const lexeme = cluster.lexemes[0]
+                const gloss = lookupGloss(lexicon, lexeme)
+                if (!gloss) continue
+                const form = normalizeForm(lexeme.form)
+                const formCounts = counts.get(form) ?? new Map<string, number>()
+                formCounts.set(gloss, (formCounts.get(gloss) ?? 0) + 1)
+                counts.set(form, formCounts)
+            }
+        }
+    }
+
+    const glosses = new Map<string, string>()
+    for (const [form, formCounts] of counts) {
+        let best: string | undefined
+        let bestCount = 0
+        for (const [gloss, count] of formCounts) {
+            if (count > bestCount) {
+                best = gloss
+                bestCount = count
+            }
+        }
+        if (best !== undefined) glosses.set(form, best)
+    }
+    corpusCache.set(dir, { signature, lexicon, glosses })
+    return glosses
 }
 
 // ---------- raw USFM verse segments ----------
@@ -299,45 +372,76 @@ function loadSegments(projectDir: string, projectId: string, book: string): Map<
     )
 }
 
-// ---------- verse -> [word, gloss] pairs (spec §4) ----------
+// ---------- verse -> [word, gloss] pairs (it_update1.md) ----------
 
 function isWordCluster(cluster: Cluster): boolean {
     return cluster.lexemes.length === 1 && cluster.lexemes[0].type === "Word"
 }
 
-function verseWords(item: InterlinearItem, segment: string, lexicon: Lexicon): WordGloss[] {
-    const groups = new Map<string, Cluster[]>()
-    for (const cluster of item.clusters) {
-        if (cluster.excluded) continue
-        if (cluster.lexemes.length === 0) continue
-        if (cluster.lexemes.some((l) => l.type === "Phrase")) continue
+interface Token {
+    index: number
+    text: string
+}
+
+// USFM content that is not verse text. Replaced by spaces so offsets stay aligned with the segment.
+const NON_TEXT_PATTERNS = [
+    /\\(f|fe|x)\s[\s\S]*?\\\1\*/g,                // footnotes, endnotes, cross-refs
+    /(^|\n)\\(s\d*|ms\d*|mr|r|sr|d)(?=\s)[^\n]*/g,  // headings, Psalm titles
+    /\|[^\\\n]*/g,                                // word attributes: \w word|attrs\w*
+    /\\(c|v)\s+\S+/g,                              // chapter/verse numbers
+    /\\\+?[A-Za-z0-9]+\*?/g                         // other markers
+]
+
+// Split a segment into words: runs of Unicode letters and combining marks in verse text.
+export function tokenize(segment: string): Token[] {
+    let text = segment
+    for (const pattern of NON_TEXT_PATTERNS) {
+        text = text.replace(pattern, (match) => " ".repeat(match.length))
+    }
+    return [...text.matchAll(/[\p{L}\p{M}]+/gu)].map((m) => ({ index: m.index ?? 0, text: m[0] }))
+}
+
+function verseWords(
+    segment: string,
+    item: InterlinearItem | undefined,
+    lexicon: Lexicon,
+    corpus: Map<string, string>,
+    language: string,
+    showSource: boolean
+): WordGloss[] {
+    // Word clusters by exact range; others (stale, Stem/affix, Phrase) don't apply to a token.
+    const approved = new Map<string, Cluster[]>()
+    for (const cluster of item?.clusters ?? []) {
+        if (cluster.excluded || !isWordCluster(cluster)) continue
         const key = `${cluster.index}:${cluster.length}`
-        const group = groups.get(key) ?? []
-        group.push(cluster)
-        groups.set(key, group)
+        approved.set(key, [...(approved.get(key) ?? []), cluster])
     }
 
-    const entries: { index: number; length: number; word: WordGloss }[] = []
-    for (const group of groups.values()) {
-        const { index, length } = group[0]
-        const slice = segment.slice(index, index + length)
-        const wordClusters = group.filter(isWordCluster)
+    return tokenize(segment).map((token) => {
+        const form = normalizeForm(token.text)
+        let gloss: string | null = null
+        let source: GlossSource = "-"
 
-        const current = wordClusters.find((c) => normalizeForm(c.lexemes[0].form) === normalizeForm(slice))
-        if (current) {
-            entries.push({ index, length, word: [slice, lookupGloss(lexicon, current.lexemes[0])] })
-        } else if (wordClusters.length > 0) {
-            // Stale: text was edited after glossing, so trust the analysis instead.
-            const lexeme = wordClusters[0].lexemes[0]
-            entries.push({ index, length, word: [lexeme.form, lookupGloss(lexicon, lexeme)] })
-        } else {
-            // Morpheme analysis only; no whole-word gloss.
-            entries.push({ index, length, word: [slice, null] })
+        for (const cluster of approved.get(`${token.index}:${token.text.length}`) ?? []) {
+            if (normalizeForm(cluster.lexemes[0].form) !== form) continue
+            gloss = lookupGloss(lexicon, cluster.lexemes[0]) || null
+            if (gloss) {
+                source = "a"
+                break
+            }
         }
-    }
+        if (!gloss) {
+            gloss = corpus.get(form) ?? null
+            if (gloss) source = "g"
+        }
+        if (!gloss) {
+            gloss = lexicon.byForm.get(form)?.get(language) ?? null
+            if (gloss) source = "l"
+        }
 
-    entries.sort((a, b) => a.index - b.index || a.length - b.length)
-    return entries.map((e) => e.word)
+        const word = token.text
+        return showSource ? [word, gloss ?? NO_GLOSS, source] : [word, gloss ?? NO_GLOSS]
+    })
 }
 
 // ---------- reference handling ----------
@@ -469,10 +573,23 @@ export function getInterlinear(request: InterlinearRequest): InterlinearResult {
 
     const projectDir = getProjectDir(request.projectsRoot, request.project)
     const lexicon = loadLexicon(projectDir)
+    const showSource = request.showSource ?? false
 
-    // Per-book data, loaded lazily. null = unavailable (only when allowPartial).
+    let corpus = new Map<string, string>()
+    const languageDir = interlinearDir(projectDir, request.language)
+    const hasLanguage = fs.existsSync(languageDir)
+    if (hasLanguage) {
+        corpus = loadCorpus(languageDir, request.language, lexicon)
+    } else {
+        const err = new InterlinearNotFoundError(
+            `No interlinear data for language ${request.language} in project ${request.project}`
+        )
+        if (!allowPartial) throw err
+        missing.push(err.message)
+    }
+
+    // Per-book text, loaded lazily. null = unavailable (only when allowPartial).
     const books = new Map<string, ParsedBook | null>()
-    const interlinears = new Map<string, InterlinearBook | null>()
 
     const verses: InterlinearVerse[] = []
     const seen = new Set<string>()
@@ -490,30 +607,20 @@ export function getInterlinear(request: InterlinearRequest): InterlinearResult {
         const parsed = books.get(book)
         if (!parsed) continue
 
-        if (!interlinears.has(book)) {
-            try {
-                interlinears.set(book, loadInterlinear(projectDir, request.project, request.language, book))
-            } catch (err) {
-                if (!(err instanceof InterlinearNotFoundError) || !allowPartial) throw err
-                missing.push(err.message)
-                interlinears.set(book, null)
-            }
-        }
-        const interlinear = interlinears.get(book)
-        const segments = interlinear ? loadSegments(projectDir, request.project, book) : undefined
+        // No interlinear file for this book is fine: all words are guessed from other books.
+        const interlinear = hasLanguage ? loadInterlinear(projectDir, request.language, book) : undefined
+        const segments = loadSegments(projectDir, request.project, book)
 
         for (const target of expandSpan(parsed, book, span, onMissing)) {
             const ref = `${book} ${target.chapter}:${target.label}`
             if (seen.has(ref)) continue
             seen.add(ref)
 
-            const item = interlinear ? findItem(interlinear, target) : undefined
-            if (!item || !segments) {
-                verses.push({ ref, words: [] })
-                continue
-            }
-            const segment = segments.get(`${item.chapter}:${item.label}`) ?? ""
-            verses.push({ ref, words: verseWords(item, segment, lexicon) })
+            // Range offsets are relative to the item's own segment, so only use an item whose
+            // verse label matches the text's; otherwise all words are guessed.
+            const item = interlinear?.items.get(`${target.chapter}:${target.label}`)
+            const segment = segments.get(`${target.chapter}:${target.label}`) ?? ""
+            verses.push({ ref, words: verseWords(segment, item, lexicon, corpus, request.language, showSource) })
         }
     }
 

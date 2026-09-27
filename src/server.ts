@@ -108,7 +108,10 @@ export function createServer(projectsRoot: string): McpServer {
                 "its gloss in the given language. Specify verses either with book plus optional chapter/verse range " +
                 "(same as get-scripture) or with refs, a semicolon-separated list such as 'ROM 1:1; 3:5-7; MAT 5'. " +
                 "Returns JSON: [{\"ref\":\"ROM 1:1\",\"words\":[[\"Kɨ\",\"I\"],...]},...]. " +
-                "A gloss is null when the word is analyzed but has no whole-word gloss. Unanalyzed words are omitted.",
+                "Every word of the verse text is returned. The gloss is the one approved for that word in the verse, " +
+                "otherwise the word's most common gloss elsewhere, otherwise the first gloss of a matching lexicon entry, " +
+                "otherwise '_'. With showSource, each word gets a third element: 'a' approved in this verse, " +
+                "'g' guessed from other verses, 'l' from the lexicon, '-' never glossed.",
             inputSchema: {
                 project: z.string().describe("Paratext project id (folder name)"),
                 language: z.string().describe("Gloss language code, e.g. en (see list-it)"),
@@ -127,10 +130,14 @@ export function createServer(projectsRoot: string): McpServer {
                 allowPartial: z
                     .boolean()
                     .optional()
-                    .describe("If true, omit missing verses/books and return empty words for missing interlinear data instead of raising an error")
+                    .describe("If true, omit missing verses/books and return '_' glosses for a missing gloss language instead of raising an error"),
+                showSource: z
+                    .boolean()
+                    .optional()
+                    .describe("If true, add a third element to each word: 'a' approved, 'g' guessed, 'l' lexicon, '-' never glossed")
             }
         },
-        async ({ project, language, book, startChapter, startVerse, endChapter, endVerse, refs, allowPartial }) => {
+        async ({ project, language, book, startChapter, startVerse, endChapter, endVerse, refs, allowPartial, showSource }) => {
             const result = getInterlinear({
                 projectsRoot,
                 project,
@@ -141,7 +148,8 @@ export function createServer(projectsRoot: string): McpServer {
                 endChapter,
                 endVerse,
                 refs,
-                allowPartial
+                allowPartial,
+                showSource
             })
             const content = [{ type: "text" as const, text: JSON.stringify(result.verses) }]
             if (result.missing.length > 0) {

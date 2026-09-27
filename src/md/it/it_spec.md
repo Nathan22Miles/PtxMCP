@@ -116,6 +116,8 @@ Staleness: if text was edited after glossing, ranges drift. In ROM ~98% of Word 
 
 ## 4. Algorithm: verse → `[word, gloss]` pairs
 
+> Superseded by `it_update1.md` (best-effort glossing of every word). §4 and §6 below describe v1.
+
 ```
 input: project, glossLang, book, one verse ref (from range expansion, §7)
 1. xml = Interlinear_<glossLang>/Interlinear_<glossLang>_<book>.xml (parse once, cache)

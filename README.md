@@ -23,6 +23,7 @@ questions — it picks the right tool and arguments on its own.
 - "What interlinear gloss languages does AKG-Uni have?"
 - "Show me the English interlinear glosses for Romans 1:1 in AKG-Uni."
 - "Get the AKG-Uni interlinear for ROM 1:1-5; 3:23; 6:23."
+- "Show the AKG-Uni interlinear for Galatians 1 and mark which glosses are guesses."
 - "What is the NT Greek word for 'gospel'?"
 - "Where does εὐαγγέλιον occur in Romans? Show the AKG-Uni interlinear for those verses."
 
@@ -181,8 +182,11 @@ chosen gloss language.
       same meaning as in `get-scripture`
     - `refs` — semicolon-separated references, e.g. `ROM 1:1; 3:5-7; 1:30-2:2; MAT 5`.
       A reference without a book reuses the previous reference's book.
-- `allowPartial` — if `true`, omits missing books/verses and returns empty
-  `words` when interlinear data is missing, instead of returning an error
+- `allowPartial` — if `true`, omits missing books/verses and returns `_` glosses
+  when the gloss language has no interlinear data, instead of returning an error
+- `showSource` — if `true`, each word gets a third element saying where the gloss
+  came from: `a` approved in this verse, `g` guessed from other verses, `l` from the
+  lexicon, `-` never glossed, e.g. `["Kɨ","I","a"]`
 
 Output is JSON, one entry per verse:
 
@@ -190,17 +194,20 @@ Output is JSON, one entry per verse:
 [{"ref":"ROM 1:1","words":[["Kɨ","I"],["Pol","Paul"],["kɨ","I"],["gemsua","for you.pl"]]}]
 ```
 
-- Glosses are the whole-word glosses chosen in Paratext's interlinearizer.
-- A gloss is `null` when the word has only a morpheme (stem/affix) analysis.
-- Words that have not been analyzed, and phrase glosses, are omitted.
-- If verse text was edited after glossing, words come from the stored analysis
-  and may be slightly out of order.
-- A verse with no interlinear data is returned with an empty `words` list.
+- Every word of the verse text is returned, in order (headings, footnotes and
+  cross-references are skipped; a word is a run of letters).
+- Each word's gloss is, in order of preference:
+    1. the whole-word gloss approved for that word in this verse in Paratext's interlinearizer
+    2. otherwise, the gloss most often approved for that word form anywhere in the gloss language's data
+    3. otherwise, the first gloss (in the gloss language) of a lexicon entry with that form
+    4. otherwise `_`
+- Phrase glosses are not used.
 
 When `allowPartial` reports missing items, they are listed in a second text
 result: `[missing: ...]`.
 
-See `src/md/it/it_spec.md` for details of the Paratext interlinear data layout.
+See `src/md/it/it_spec.md` for details of the Paratext interlinear data layout, and
+`src/md/it/it_update1.md` for how glosses are chosen.
 
 ### `list-bt`
 
