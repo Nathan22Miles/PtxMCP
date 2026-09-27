@@ -4,16 +4,22 @@ import { describe, expect, it } from "vitest"
 import {
     BiblicalTermsNotFoundError,
     getTermRefs,
+    getTermRendering,
     resolveBiblicalTermsPath,
     searchTerms,
-    TermNotFoundError
+    TermNotFoundError,
+    TermRenderingsNotFoundError
 } from "../src/biblicalTerms.js"
+import { ProjectNotFoundError } from "../src/discovery.js"
+import { PROJECTS_ROOT } from "./testUtils.js"
 import { bookCodeFromNumber, bookNumberFromCode } from "../src/books.js"
 import { InvalidReferenceError } from "../src/scripture.js"
 
 // myParatext/Lists is git-ignored (large); skip data-dependent tests when it's absent.
 const TERMS_PATH = path.join(import.meta.dirname, "..", "myParatext", "Lists", "BiblicalTerms.xml")
 const hasTerms = fs.existsSync(TERMS_PATH)
+// AKG-Uni is git-ignored too.
+const hasAkg = fs.existsSync(path.join(PROJECTS_ROOT, "AKG-Uni", "TermRenderings.xml"))
 
 // Id as stored in the file uses U+1F73 (epsilon with oxia); NFC would turn it into U+03AD.
 const EUANGELION = "εὐαγγέλιον"
@@ -117,5 +123,26 @@ describe.skipIf(!hasTerms)("getTermRefs", () => {
             .toThrow(InvalidReferenceError)
         expect(() => getTermRefs({ termsPath: TERMS_PATH, id: EUANGELION, startChapter: 1 }))
             .toThrow(InvalidReferenceError)
+    })
+})
+
+describe.skipIf(!hasAkg)("getTermRendering", () => {
+    it("returns the project's renderings as stored", () => {
+        expect(getTermRendering(PROJECTS_ROOT, "AKG-Uni", EUANGELION)).toBe("Akam* Aghuuŋ*")
+        expect(getTermRendering(PROJECTS_ROOT, "AKG-Uni", "Γαλιλαία")).toBe("Galilin distrigh*||Galilin Rɨm*")
+    })
+
+    it("matches the Id regardless of Unicode normalization", () => {
+        expect(getTermRendering(PROJECTS_ROOT, "AKG-Uni", EUANGELION.normalize("NFC"))).toBe("Akam* Aghuuŋ*")
+    })
+
+    it("returns an empty string for a term with no renderings", () => {
+        expect(getTermRendering(PROJECTS_ROOT, "AKG-Uni", "Ααρων (DC)")).toBe("")
+    })
+
+    it("errors for unknown terms, projects, and projects without TermRenderings.xml", () => {
+        expect(() => getTermRendering(PROJECTS_ROOT, "AKG-Uni", "nope")).toThrow(TermNotFoundError)
+        expect(() => getTermRendering(PROJECTS_ROOT, "NOPE", EUANGELION)).toThrow(ProjectNotFoundError)
+        expect(() => getTermRendering(PROJECTS_ROOT, "WEB", EUANGELION)).toThrow(TermRenderingsNotFoundError)
     })
 })

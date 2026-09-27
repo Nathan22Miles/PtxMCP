@@ -26,6 +26,7 @@ questions — it picks the right tool and arguments on its own.
 - "Show the AKG-Uni interlinear for Galatians 1 and mark which glosses are guesses."
 - "What is the NT Greek word for 'gospel'?"
 - "Where does εὐαγγέλιον occur in Romans? Show the AKG-Uni interlinear for those verses."
+- "How does AKG-Uni translate 'gospel'?"
 
 ## Caveats
 - This code
@@ -243,6 +244,18 @@ canonical order, book omitted when it repeats. Empty if no verses match.
 
 References use original-language (Hebrew/Greek) verse numbering, which differs
 from some translations in a few places (e.g. Hebrew Malachi 3:19 = English 4:1).
+
+### `get-rendering`
+
+Returns how a project renders a Biblical Term, from the project's `TermRenderings.xml`.
+
+- `project` — project id (folder name)
+- `id` — term id from `list-bt` (including any `-1`, `-2` suffix)
+
+Output is the project's renderings exactly as entered in Paratext's Biblical Terms
+tool, e.g. `Akam* Aghuuŋ*` for εὐαγγέλιον. `*` is a wildcard for any word ending or
+beginning, and `||` separates alternative renderings
+(`Galilin distrigh*||Galilin Rɨm*`). Empty if the term has no renderings yet.
 
 See `src/md/bt/bt_spec.md` for details of the Biblical Terms data layout.
 

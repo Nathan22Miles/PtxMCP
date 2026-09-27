@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import { z } from "zod"
-import { getTermRefs, resolveBiblicalTermsPath, searchTerms } from "./biblicalTerms.js"
+import { getTermRefs, getTermRendering, resolveBiblicalTermsPath, searchTerms } from "./biblicalTerms.js"
 import { getInterlinear, listInterlinearLanguages } from "./interlinear.js"
 import { getScripture, listAvailableBooks, listAvailableProjects } from "./scripture.js"
 
@@ -213,6 +213,25 @@ export function createServer(projectsRoot: string): McpServer {
                 endVerse,
                 refs
             })
+            return { content: [{ type: "text", text }] }
+        }
+    )
+
+    server.registerTool(
+        "get-rendering",
+        {
+            title: "Get Biblical Term rendering",
+            description:
+                "Get how a Paratext project renders a Biblical Term, from the project's TermRenderings.xml. " +
+                "Returns the renderings exactly as stored, e.g. 'Akam* Aghuuŋ*': '*' is a wildcard matching any " +
+                "word ending/beginning, '||' separates alternative renderings. Empty if the term has no renderings yet.",
+            inputSchema: {
+                project: z.string().describe("Paratext project id (folder name)"),
+                id: z.string().describe("Term id (original-language lemma, incl. any -N suffix) from list-bt")
+            }
+        },
+        async ({ project, id }) => {
+            const text = getTermRendering(projectsRoot, project, id)
             return { content: [{ type: "text", text }] }
         }
     )

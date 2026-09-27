@@ -1,6 +1,7 @@
 import fs from "node:fs"
 import path from "node:path"
 import { bookCodeFromNumber, bookNumberFromCode, isBookCode } from "./books.js"
+import { getProjectDir } from "./discovery.js"
 import { BookSpan, parseRefs, Span } from "./interlinear.js"
 import { InvalidReferenceError } from "./scripture.js"
 
@@ -205,6 +206,40 @@ function formatRefs(verses: VerseRef[]): string {
     return parts.join("; ")
 }
 
+// ---------- project TermRenderings.xml ----------
+
+export class TermRenderingsNotFoundError extends Error {
+    constructor(projectId: string) {
+        super(`No TermRenderings.xml in project ${projectId}`)
+        this.name = "TermRenderingsNotFoundError"
+    }
+}
+
+const renderingsCache = new Map<string, { mtimeMs: number; value: Map<string, string> }>()
+
+// NFC term Id -> raw <Renderings> text (empty when the term has no renderings).
+function parseTermRenderings(xml: string): Map<string, string> {
+    const renderings = new Map<string, string>()
+    const termPattern = /<TermRendering\s+Id="([^"]*)"[^>]*?(?:\/>|>([\s\S]*?)<\/TermRendering>)/g
+    for (const match of xml.matchAll(termPattern)) {
+        const id = decodeXml(match[1]).normalize("NFC")
+        const value = (match[2] ?? "").match(/<Renderings>([^<]*)<\/Renderings>/)
+        renderings.set(id, value ? decodeXml(value[1]) : "")
+    }
+    return renderings
+}
+
+function loadTermRenderings(projectDir: string, projectId: string): Map<string, string> {
+    const filePath = path.join(projectDir, "TermRenderings.xml")
+    if (!fs.existsSync(filePath)) throw new TermRenderingsNotFoundError(projectId)
+    const mtimeMs = fs.statSync(filePath).mtimeMs
+    const cached = renderingsCache.get(filePath)
+    if (cached && cached.mtimeMs === mtimeMs) return cached.value
+    const value = parseTermRenderings(fs.readFileSync(filePath, "utf8"))
+    renderingsCache.set(filePath, { mtimeMs, value })
+    return value
+}
+
 // ---------- public API ----------
 
 export function searchTerms(termsPath: string, search: string, book?: string): TermSummary[] {
@@ -258,4 +293,13 @@ export function getTermRefs(request: TermRefsRequest): string {
         ? term.verses.filter((ref) => filters.some((f) => inSpan(ref, f.bookNumber, f.span)))
         : term.verses
     return formatRefs(verses)
+}
+
+// The project's renderings of a term, exactly as stored in TermRenderings.xml
+// (e.g. "Akam* Aghuuŋ*"; "*" is a wildcard, "||" separates alternatives). "" if none.
+export function getTermRendering(projectsRoot: string, projectId: string, id: string): string {
+    const projectDir = getProjectDir(projectsRoot, projectId)
+    const rendering = loadTermRenderings(projectDir, projectId).get(id.trim().normalize("NFC"))
+    if (rendering === undefined) throw new TermNotFoundError(id)
+    return rendering
 }
