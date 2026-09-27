@@ -1,6 +1,6 @@
 {
   "name": "@milesnl/ptx-mcp",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "MCP server for accessing scripture data from Paratext project folders",
   "main": "dist/index.js",
   "bin": {
