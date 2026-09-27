@@ -1,6 +1,4 @@
-Add mcp command get-rendering <project> <Id>
-- find biblical term entry with matching Id in TermRenderings.xml
-- return value of <Renderings> field
+figure out how TermRenderings.xml marks 'denied' errors, e.g. ἀκάθαρτος
 
 Create skill for finding biblical term renderings
 - show actual renderings found using horiz interlinear

@@ -27,6 +27,7 @@ questions — it picks the right tool and arguments on its own.
 - "What is the NT Greek word for 'gospel'?"
 - "Where does εὐαγγέλιον occur in Romans? Show the AKG-Uni interlinear for those verses."
 - "How does AKG-Uni translate 'gospel'?"
+- "Which verses are denied for ἀρχισυνάγωγος in AKG-Uni?"
 
 ## Caveats
 - This code
@@ -252,10 +253,18 @@ Returns how a project renders a Biblical Term, from the project's `TermRendering
 - `project` — project id (folder name)
 - `id` — term id from `list-bt` (including any `-1`, `-2` suffix)
 
-Output is the project's renderings exactly as entered in Paratext's Biblical Terms
-tool, e.g. `Akam* Aghuuŋ*` for εὐαγγέλιον. `*` is a wildcard for any word ending or
-beginning, and `||` separates alternative renderings
-(`Galilin distrigh*||Galilin Rɨm*`). Empty if the term has no renderings yet.
+Output is JSON:
+
+```json
+{"renderings":"Akam* Aghuuŋ*","denials":"MRK 1:1"}
+```
+
+- `renderings` — the project's renderings exactly as entered in Paratext's Biblical
+  Terms tool. `*` is a wildcard for any word ending or beginning, and `||` separates
+  alternative renderings (`Galilin distrigh*||Galilin Rɨm*`). Empty if none yet.
+- `denials` — verses where a user marked the term as not needing a rendering
+  (denied), as a reference string like `get-bt-refs` returns
+  (`MAT 10:1; MRK 1:23`). Empty if none.
 
 See `src/md/bt/bt_spec.md` for details of the Biblical Terms data layout.
 

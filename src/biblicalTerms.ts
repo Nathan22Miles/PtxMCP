@@ -215,21 +215,48 @@ export class TermRenderingsNotFoundError extends Error {
     }
 }
 
-const renderingsCache = new Map<string, { mtimeMs: number; value: Map<string, string> }>()
+export interface TermRendering {
+    // Raw <Renderings> text, e.g. "Akam* Aghuuŋ*"; "" if none.
+    renderings: string
+    // Verses where a match was denied (marked as not a rendering), e.g. "MRK 1:1; LUK 2:3"; "" if none.
+    denials: string
+}
 
-// NFC term Id -> raw <Renderings> text (empty when the term has no renderings).
-function parseTermRenderings(xml: string): Map<string, string> {
-    const renderings = new Map<string, string>()
+interface ParsedTermRendering {
+    renderings: string
+    denials: VerseRef[]
+}
+
+const renderingsCache = new Map<string, { mtimeMs: number; value: Map<string, ParsedTermRendering> }>()
+
+// <Denial> is a BBBCCCVVV verse number with leading zeros dropped, e.g. 41001001 = MRK 1:1.
+function parseDenials(body: string): VerseRef[] {
+    const unique = new Map<number, VerseRef>()
+    for (const match of body.matchAll(/<Denial>\s*(\d+)\s*<\/Denial>/g)) {
+        const value = parseInt(match[1], 10)
+        unique.set(value, {
+            bookNumber: Math.floor(value / 1_000_000),
+            chapter: Math.floor(value / 1000) % 1000,
+            verse: value % 1000
+        })
+    }
+    return [...unique.values()].sort(compareVerseRefs)
+}
+
+// NFC term Id -> renderings and denials.
+function parseTermRenderings(xml: string): Map<string, ParsedTermRendering> {
+    const renderings = new Map<string, ParsedTermRendering>()
     const termPattern = /<TermRendering\s+Id="([^"]*)"[^>]*?(?:\/>|>([\s\S]*?)<\/TermRendering>)/g
     for (const match of xml.matchAll(termPattern)) {
         const id = decodeXml(match[1]).normalize("NFC")
-        const value = (match[2] ?? "").match(/<Renderings>([^<]*)<\/Renderings>/)
-        renderings.set(id, value ? decodeXml(value[1]) : "")
+        const body = match[2] ?? ""
+        const value = body.match(/<Renderings>([^<]*)<\/Renderings>/)
+        renderings.set(id, { renderings: value ? decodeXml(value[1]) : "", denials: parseDenials(body) })
     }
     return renderings
 }
 
-function loadTermRenderings(projectDir: string, projectId: string): Map<string, string> {
+function loadTermRenderings(projectDir: string, projectId: string): Map<string, ParsedTermRendering> {
     const filePath = path.join(projectDir, "TermRenderings.xml")
     if (!fs.existsSync(filePath)) throw new TermRenderingsNotFoundError(projectId)
     const mtimeMs = fs.statSync(filePath).mtimeMs
@@ -296,10 +323,10 @@ export function getTermRefs(request: TermRefsRequest): string {
 }
 
 // The project's renderings of a term, exactly as stored in TermRenderings.xml
-// (e.g. "Akam* Aghuuŋ*"; "*" is a wildcard, "||" separates alternatives). "" if none.
-export function getTermRendering(projectsRoot: string, projectId: string, id: string): string {
+// ("*" is a wildcard, "||" separates alternatives), plus its denied verses as a refs string.
+export function getTermRendering(projectsRoot: string, projectId: string, id: string): TermRendering {
     const projectDir = getProjectDir(projectsRoot, projectId)
     const rendering = loadTermRenderings(projectDir, projectId).get(id.trim().normalize("NFC"))
     if (rendering === undefined) throw new TermNotFoundError(id)
-    return rendering
+    return { renderings: rendering.renderings, denials: formatRefs(rendering.denials) }
 }

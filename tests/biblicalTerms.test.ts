@@ -127,17 +127,24 @@ describe.skipIf(!hasTerms)("getTermRefs", () => {
 })
 
 describe.skipIf(!hasAkg)("getTermRendering", () => {
-    it("returns the project's renderings as stored", () => {
-        expect(getTermRendering(PROJECTS_ROOT, "AKG-Uni", EUANGELION)).toBe("Akam* Aghuuŋ*")
-        expect(getTermRendering(PROJECTS_ROOT, "AKG-Uni", "Γαλιλαία")).toBe("Galilin distrigh*||Galilin Rɨm*")
+    it("returns the project's renderings as stored, and denials as refs", () => {
+        expect(getTermRendering(PROJECTS_ROOT, "AKG-Uni", EUANGELION))
+            .toEqual({ renderings: "Akam* Aghuuŋ*", denials: "MRK 1:1" })
+        expect(getTermRendering(PROJECTS_ROOT, "AKG-Uni", "Γαλιλαία").renderings)
+            .toBe("Galilin distrigh*||Galilin Rɨm*")
+    })
+
+    it("decodes denials in canonical order with the book carried forward", () => {
+        expect(getTermRendering(PROJECTS_ROOT, "AKG-Uni", "πνεῦμα + ἀκάθαρτος").denials).toBe("MAT 10:1; MRK 1:23")
+        expect(getTermRendering(PROJECTS_ROOT, "AKG-Uni", "ἀκάθαρτος").denials).toBe("ACT 10:28")
     })
 
     it("matches the Id regardless of Unicode normalization", () => {
-        expect(getTermRendering(PROJECTS_ROOT, "AKG-Uni", EUANGELION.normalize("NFC"))).toBe("Akam* Aghuuŋ*")
+        expect(getTermRendering(PROJECTS_ROOT, "AKG-Uni", EUANGELION.normalize("NFC")).renderings).toBe("Akam* Aghuuŋ*")
     })
 
-    it("returns an empty string for a term with no renderings", () => {
-        expect(getTermRendering(PROJECTS_ROOT, "AKG-Uni", "Ααρων (DC)")).toBe("")
+    it("returns empty strings for a term with no renderings or denials", () => {
+        expect(getTermRendering(PROJECTS_ROOT, "AKG-Uni", "Ααρων (DC)")).toEqual({ renderings: "", denials: "" })
     })
 
     it("errors for unknown terms, projects, and projects without TermRenderings.xml", () => {

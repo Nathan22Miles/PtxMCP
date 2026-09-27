@@ -223,16 +223,18 @@ export function createServer(projectsRoot: string): McpServer {
             title: "Get Biblical Term rendering",
             description:
                 "Get how a Paratext project renders a Biblical Term, from the project's TermRenderings.xml. " +
-                "Returns the renderings exactly as stored, e.g. 'Akam* Aghuuŋ*': '*' is a wildcard matching any " +
-                "word ending/beginning, '||' separates alternative renderings. Empty if the term has no renderings yet.",
+                "Returns JSON {renderings, denials}. renderings is exactly as stored, e.g. 'Akam* Aghuuŋ*': '*' is a " +
+                "wildcard matching any word ending/beginning, '||' separates alternative renderings; empty if none yet. " +
+                "denials lists verses where the user marked a rendering match as not being this term " +
+                "(e.g. 'MRK 1:1; LUK 2:3'); empty if none.",
             inputSchema: {
                 project: z.string().describe("Paratext project id (folder name)"),
                 id: z.string().describe("Term id (original-language lemma, incl. any -N suffix) from list-bt")
             }
         },
         async ({ project, id }) => {
-            const text = getTermRendering(projectsRoot, project, id)
-            return { content: [{ type: "text", text }] }
+            const rendering = getTermRendering(projectsRoot, project, id)
+            return { content: [{ type: "text", text: JSON.stringify(rendering) }] }
         }
     )
 
