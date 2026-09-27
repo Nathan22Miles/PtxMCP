@@ -28,6 +28,7 @@ questions — it picks the right tool and arguments on its own.
 - "Where does εὐαγγέλιον occur in Romans? Show the AKG-Uni interlinear for those verses."
 - "How does AKG-Uni translate 'gospel'?"
 - "Which verses are denied for ἀρχισυνάγωγος in AKG-Uni?"
+- "What notes has the AKG-Uni team written about how they translate 'Christ'?"
 
 ## Caveats
 - This code
@@ -248,7 +249,8 @@ from some translations in a few places (e.g. Hebrew Malachi 3:19 = English 4:1).
 
 ### `get-rendering`
 
-Returns how a project renders a Biblical Term, from the project's `TermRenderings.xml`.
+Returns how a project renders a Biblical Term, the verses where it was denied, and
+the notes on it, from the project's `TermRenderings.xml`.
 
 - `project` — project id (folder name)
 - `id` — term id from `list-bt` (including any `-1`, `-2` suffix)
@@ -256,7 +258,7 @@ Returns how a project renders a Biblical Term, from the project's `TermRendering
 Output is JSON:
 
 ```json
-{"renderings":"Akam* Aghuuŋ*","denials":"MRK 1:1"}
+{"renderings":"Akam* Aghuuŋ*","denials":"MRK 1:1","notes":"akam* aghuuŋ* - good talk; the ‘Gospel’"}
 ```
 
 - `renderings` — the project's renderings exactly as entered in Paratext's Biblical
@@ -265,6 +267,8 @@ Output is JSON:
 - `denials` — verses where a user marked the term as not needing a rendering
   (denied), as a reference string like `get-bt-refs` returns
   (`MAT 10:1; MRK 1:23`). Empty if none.
+- `notes` — the free-text notes entered for the term, which may span several lines
+  (separated by `\n`). Empty if none.
 
 See `src/md/bt/bt_spec.md` for details of the Biblical Terms data layout.
 

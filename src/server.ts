@@ -223,10 +223,11 @@ export function createServer(projectsRoot: string): McpServer {
             title: "Get Biblical Term rendering",
             description:
                 "Get how a Paratext project renders a Biblical Term, from the project's TermRenderings.xml. " +
-                "Returns JSON {renderings, denials}. renderings is exactly as stored, e.g. 'Akam* Aghuuŋ*': '*' is a " +
+                "Returns JSON {renderings, denials, notes}. renderings is exactly as stored, e.g. 'Akam* Aghuuŋ*': '*' is a " +
                 "wildcard matching any word ending/beginning, '||' separates alternative renderings; empty if none yet. " +
                 "denials lists verses where the user marked a rendering match as not being this term " +
-                "(e.g. 'MRK 1:1; LUK 2:3'); empty if none.",
+                "(e.g. 'MRK 1:1; LUK 2:3'); empty if none. notes is the user's free-text notes on the term, " +
+                "possibly several lines separated by \\n; empty if none.",
             inputSchema: {
                 project: z.string().describe("Paratext project id (folder name)"),
                 id: z.string().describe("Term id (original-language lemma, incl. any -N suffix) from list-bt")

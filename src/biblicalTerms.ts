@@ -220,11 +220,14 @@ export interface TermRendering {
     renderings: string
     // Verses where a match was denied (marked as not a rendering), e.g. "MRK 1:1; LUK 2:3"; "" if none.
     denials: string
+    // Free-text <Notes>, may span several lines ("\n"); "" if none.
+    notes: string
 }
 
 interface ParsedTermRendering {
     renderings: string
     denials: VerseRef[]
+    notes: string
 }
 
 const renderingsCache = new Map<string, { mtimeMs: number; value: Map<string, ParsedTermRendering> }>()
@@ -251,7 +254,12 @@ function parseTermRenderings(xml: string): Map<string, ParsedTermRendering> {
         const id = decodeXml(match[1]).normalize("NFC")
         const body = match[2] ?? ""
         const value = body.match(/<Renderings>([^<]*)<\/Renderings>/)
-        renderings.set(id, { renderings: value ? decodeXml(value[1]) : "", denials: parseDenials(body) })
+        const notes = body.match(/<Notes>([^<]*)<\/Notes>/)
+        renderings.set(id, {
+            renderings: value ? decodeXml(value[1]) : "",
+            denials: parseDenials(body),
+            notes: notes ? decodeXml(notes[1]).replace(/\r\n?/g, "\n") : ""
+        })
     }
     return renderings
 }
@@ -323,10 +331,11 @@ export function getTermRefs(request: TermRefsRequest): string {
 }
 
 // The project's renderings of a term, exactly as stored in TermRenderings.xml
-// ("*" is a wildcard, "||" separates alternatives), plus its denied verses as a refs string.
+// ("*" is a wildcard, "||" separates alternatives), plus its denied verses as a refs string
+// and its notes.
 export function getTermRendering(projectsRoot: string, projectId: string, id: string): TermRendering {
     const projectDir = getProjectDir(projectsRoot, projectId)
     const rendering = loadTermRenderings(projectDir, projectId).get(id.trim().normalize("NFC"))
     if (rendering === undefined) throw new TermNotFoundError(id)
-    return { renderings: rendering.renderings, denials: formatRefs(rendering.denials) }
+    return { renderings: rendering.renderings, denials: formatRefs(rendering.denials), notes: rendering.notes }
 }

@@ -129,9 +129,15 @@ describe.skipIf(!hasTerms)("getTermRefs", () => {
 describe.skipIf(!hasAkg)("getTermRendering", () => {
     it("returns the project's renderings as stored, and denials as refs", () => {
         expect(getTermRendering(PROJECTS_ROOT, "AKG-Uni", EUANGELION))
-            .toEqual({ renderings: "Akam* Aghuuŋ*", denials: "MRK 1:1" })
+            .toEqual({ renderings: "Akam* Aghuuŋ*", denials: "MRK 1:1", notes: "akam* aghuuŋ* - good talk; the ‘Gospel’" })
         expect(getTermRendering(PROJECTS_ROOT, "AKG-Uni", "Γαλιλαία").renderings)
             .toBe("Galilin distrigh*||Galilin Rɨm*")
+    })
+
+    it("returns multiline notes", () => {
+        const notes = getTermRendering(PROJECTS_ROOT, "AKG-Uni", "Χριστός-2").notes
+        expect(notes.split("\n").length).toBeGreaterThan(1)
+        expect(notes).not.toMatch(/\r/)
     })
 
     it("decodes denials in canonical order with the book carried forward", () => {
@@ -144,7 +150,7 @@ describe.skipIf(!hasAkg)("getTermRendering", () => {
     })
 
     it("returns empty strings for a term with no renderings or denials", () => {
-        expect(getTermRendering(PROJECTS_ROOT, "AKG-Uni", "Ααρων (DC)")).toEqual({ renderings: "", denials: "" })
+        expect(getTermRendering(PROJECTS_ROOT, "AKG-Uni", "Ααρων (DC)")).toEqual({ renderings: "", denials: "", notes: "" })
     })
 
     it("errors for unknown terms, projects, and projects without TermRenderings.xml", () => {
