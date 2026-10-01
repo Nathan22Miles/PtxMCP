@@ -7,7 +7,9 @@ async function main() {
     const cliArg = process.argv[2]
     const projectsRoot = resolveProjectsRoot(cliArg)
 
-    const server = createServer(projectsRoot)
+    const paratextInstallDir = process.argv[3]
+
+    const server = createServer(projectsRoot, paratextInstallDir)
     const transport = new StdioServerTransport()
     await server.connect(transport)
 }

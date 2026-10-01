@@ -7,8 +7,8 @@
 ## Project discovery
 - Projects root folder resolution order:
   1. CLI startup argument
-  2. `PARATEXT_PROJECTS_DIR` env var
-  3. Fallback default: `C:\My Paratext 9 Projects` (Windows)
+  2. Fallback default: `C:\My Paratext 9 Projects` (Windows)
+- Optional second CLI argument: Paratext installation folder (parent of `Terms\Lists`) used to find `BiblicalTerms.xml`; see `src/md/bt/bt_spec_install_dir.md`
 - A project's id is its folder name (e.g. `BTBK`)
 - For testing, use the data in the `myParatextProjects` folder
 

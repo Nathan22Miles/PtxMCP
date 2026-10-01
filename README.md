@@ -24,7 +24,7 @@ questions — it picks the right tool and arguments on its own.
 - "Show me the English interlinear glosses for Romans 1:1 in AKG-Uni."
 - "Get the AKG-Uni interlinear for ROM 1:1-5; 3:23; 6:23."
 - "Show the AKG-Uni interlinear for Galatians 1 and mark which glosses are guesses."
-- "What is the NT Greek word for 'gospel'?"
+- "Use Paratext to get the NT Greek word for 'gospel'?"
 - "Where does εὐαγγέλιον occur in Romans? Show the AKG-Uni interlinear for those verses."
 - "How does AKG-Uni translate 'gospel'?"
 - "Which verses are denied for ἀρχισυνάγωγος in AKG-Uni?"
@@ -35,9 +35,10 @@ questions — it picks the right tool and arguments on its own.
     - Has only had very limited testing so far. It did work for me on Mac and Windows.
     - Has only been tested with Claude Desktop.
     - Does not support access to Paratext resource projects, e.g. RVR80. 
-    - Biblical Terms tools look for `BiblicalTerms.xml` in the Paratext 9 install folder
-      (`C:\Program Files (x86)\Paratext 9\Terms\Lists` or `C:\Program Files\Paratext 9\Terms\Lists`),
-      then in `myParatext/Lists` when running from source. These install locations are not yet verified.
+    - Biblical Terms tools look for `BiblicalTerms.xml` in the Paratext installation folder you give
+      as the second argument (see Installation Notes). If you give none, they look in
+      `C:\Program Files (x86)\Paratext 9\Terms\Lists` or `C:\Program Files\Paratext 9\Terms\Lists`,
+      then in `myParatext/Lists` when you are developer doing debugging from source.
 - In order for Claude to access this stdin MCP server, Claude must be running on the local machine, not in the cloud.
     - I think this means you must choose the 'Chat' option and NOT the 'Cowork' option when starting the chat.
       The Cowork option seems to (at least sometimes?) run in a cloud sandbox that does not have access to the local machine.
@@ -94,6 +95,13 @@ need to modify "args" to include that location.
 
 ```json
       "args": ["-y", "@milesnl/ptx-mcp", "/path/to/My Paratext 9 Projects"]
+```
+
+If Paratext is not installed at the default location, add the Paratext installation folder
+(the folder that contains `Terms\Lists`) as a second item. The projects folder must then also be given.
+
+```json
+      "args": ["-y", "@milesnl/ptx-mcp", "C:\\My Paratext 9 Projects", "C:\\Program Files\\Paratext 9"]
 ```
 
 ### To run ptx-mcp from source in development mode

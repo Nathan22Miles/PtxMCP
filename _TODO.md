@@ -1,11 +1,12 @@
-figure out how TermRenderings.xml marks 'denied' errors, e.g. ἀκάθαρτος
-
-Create skill for finding biblical term renderings
-- show actual renderings found using horiz interlinear
-- show renderings using get-rendering
-
 Add argument to server specifying location of Paratext installation
 - push to npm
 - test on Windows
+- install 
+Send note on BT skill to AI list
 
 Update tests to only use data actually checked in
+
+Add command to get BTs for a verse
+- Default to ProjectBiblicalTerms, option to MajorBiblicalTerms
+
+# Questions

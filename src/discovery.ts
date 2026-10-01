@@ -18,7 +18,7 @@ export class ProjectNotFoundError extends Error {
 }
 
 export function resolveProjectsRoot(cliArg?: string): string {
-    const root = cliArg ?? process.env.PARATEXT_PROJECTS_DIR ?? WINDOWS_DEFAULT_PROJECTS_DIR
+    const root = cliArg ?? WINDOWS_DEFAULT_PROJECTS_DIR
     if (!fs.existsSync(root) || !fs.statSync(root).isDirectory()) {
         throw new ProjectsRootNotFoundError(root)
     }

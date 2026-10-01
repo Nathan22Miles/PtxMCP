@@ -1,4 +1,5 @@
 import fs from "node:fs"
+import os from "node:os"
 import path from "node:path"
 import { describe, expect, it } from "vitest"
 import {
@@ -37,12 +38,26 @@ describe("book numbers", () => {
 
 describe("resolveBiblicalTermsPath", () => {
     it("returns the first existing candidate", () => {
-        expect(resolveBiblicalTermsPath(["/nope/BiblicalTerms.xml", __filename])).toBe(__filename)
+        expect(resolveBiblicalTermsPath(undefined, ["/nope/BiblicalTerms.xml", __filename])).toBe(__filename)
     })
 
     it("throws naming the paths tried", () => {
-        expect(() => resolveBiblicalTermsPath(["/nope/a.xml"])).toThrow(BiblicalTermsNotFoundError)
-        expect(() => resolveBiblicalTermsPath(["/nope/a.xml"])).toThrow(/\/nope\/a\.xml/)
+        expect(() => resolveBiblicalTermsPath(undefined, ["/nope/a.xml"])).toThrow(BiblicalTermsNotFoundError)
+        expect(() => resolveBiblicalTermsPath(undefined, ["/nope/a.xml"])).toThrow(/\/nope\/a\.xml/)
+    })
+})
+
+describe("resolveBiblicalTermsPath with install dir", () => {
+    it("uses Terms/Lists under the install dir", () => {
+        const dir = fs.mkdtempSync(path.join(os.tmpdir(), "ptx-"))
+        fs.mkdirSync(path.join(dir, "Terms", "Lists"), { recursive: true })
+        const file = path.join(dir, "Terms", "Lists", "BiblicalTerms.xml")
+        fs.writeFileSync(file, "<x/>")
+        expect(resolveBiblicalTermsPath(dir, [])).toBe(file)
+    })
+
+    it("hard errors without falling back to defaults", () => {
+        expect(() => resolveBiblicalTermsPath("/nope/Paratext 9", [__filename])).toThrow(/Paratext 9/)
     })
 })
 

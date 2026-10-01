@@ -4,10 +4,10 @@ import { getTermRefs, getTermRendering, resolveBiblicalTermsPath, searchTerms } 
 import { getInterlinear, listInterlinearLanguages } from "./interlinear.js"
 import { getScripture, listAvailableBooks, listAvailableProjects } from "./scripture.js"
 
-export function createServer(projectsRoot: string): McpServer {
+export function createServer(projectsRoot: string, paratextInstallDir?: string): McpServer {
     const server = new McpServer({
         name: "ptx-mcp",
-        version: "0.3.0"
+        version: "0.3.1"
     })
 
     server.registerTool(
@@ -175,7 +175,7 @@ export function createServer(projectsRoot: string): McpServer {
             }
         },
         async ({ search, book }) => {
-            const terms = searchTerms(resolveBiblicalTermsPath(), search, book)
+            const terms = searchTerms(resolveBiblicalTermsPath(paratextInstallDir), search, book)
             return { content: [{ type: "text", text: JSON.stringify(terms) }] }
         }
     )
@@ -204,7 +204,7 @@ export function createServer(projectsRoot: string): McpServer {
         },
         async ({ id, book, startChapter, startVerse, endChapter, endVerse, refs }) => {
             const text = getTermRefs({
-                termsPath: resolveBiblicalTermsPath(),
+                termsPath: resolveBiblicalTermsPath(paratextInstallDir),
                 id,
                 book,
                 startChapter,

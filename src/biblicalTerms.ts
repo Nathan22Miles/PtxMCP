@@ -71,7 +71,15 @@ export const DEFAULT_TERMS_PATHS = [
     path.join(import.meta.dirname, "..", "myParatext", "Lists", TERMS_FILE)
 ]
 
-export function resolveBiblicalTermsPath(candidates: string[] = DEFAULT_TERMS_PATHS): string {
+export function resolveBiblicalTermsPath(
+    paratextInstallDir?: string,
+    candidates: string[] = DEFAULT_TERMS_PATHS
+): string {
+    if (paratextInstallDir) {
+        const configured = path.join(paratextInstallDir, "Terms", "Lists", TERMS_FILE)
+        if (!fs.existsSync(configured)) throw new BiblicalTermsNotFoundError([configured])
+        return configured
+    }
     const found = candidates.find((candidate) => fs.existsSync(candidate))
     if (!found) throw new BiblicalTermsNotFoundError(candidates)
     return found
