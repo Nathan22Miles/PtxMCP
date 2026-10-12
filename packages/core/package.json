@@ -1,0 +1,37 @@
+{
+  "name": "@milesnl/ptx-core",
+  "version": "0.1.0",
+  "description": "Library for reading Paratext project scripture, interlinear and Biblical Terms data",
+  "type": "module",
+  "main": "dist/core.js",
+  "types": "dist/core.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/core.d.ts",
+      "default": "./dist/core.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20.11"
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc -p .",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Nathan22Miles/PtxMCP.git",
+    "directory": "packages/core"
+  },
+  "keywords": ["paratext", "bible", "usfm", "interlinear"],
+  "author": "Nathan Miles",
+  "license": "ISC",
+  "dependencies": {
+    "usfm-js": "^3.5.0"
+  }
+}
