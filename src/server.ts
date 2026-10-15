@@ -134,10 +134,17 @@ export function createServer(projectsRoot: string, paratextInstallDir?: string):
                 showSource: z
                     .boolean()
                     .optional()
-                    .describe("If true, add a third element to each word: 'a' approved, 'g' guessed, 'l' lexicon, '-' never glossed")
+                    .describe("If true, add a third element to each word: 'a' approved, 'g' guessed, 'l' lexicon, '-' never glossed"),
+                hashedOnly: z
+                    .boolean()
+                    .optional()
+                    .describe(
+                        "If true, only return verses that a human previously approved (those with a Hash attribute in the " +
+                        "interlinear file), even if the verse text has changed since. Verses without one are omitted, not reported as missing."
+                    )
             }
         },
-        async ({ project, language, book, startChapter, startVerse, endChapter, endVerse, refs, allowPartial, showSource }) => {
+        async ({ project, language, book, startChapter, startVerse, endChapter, endVerse, refs, allowPartial, showSource, hashedOnly }) => {
             const result = getInterlinear({
                 projectsRoot,
                 project,
@@ -149,7 +156,8 @@ export function createServer(projectsRoot: string, paratextInstallDir?: string):
                 endVerse,
                 refs,
                 allowPartial,
-                showSource
+                showSource,
+                hashedOnly
             })
             const content = [{ type: "text" as const, text: JSON.stringify(result.verses) }]
             if (result.missing.length > 0) {

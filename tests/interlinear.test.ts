@@ -103,6 +103,19 @@ describe.skipIf(!hasAkg)("getInterlinear", () => {
         expect(words.every((w) => w[2] === "a")).toBe(true)
     })
 
+    it("hashedOnly keeps only verses with a Hash attribute", () => {
+        // ROM 1:8 has a Hash; ROM 1:11 does not.
+        const all = getInterlinear({ ...base, refs: "ROM 1:8; 1:11" }).verses.map((v) => v.ref)
+        const hashed = getInterlinear({ ...base, refs: "ROM 1:8; 1:11", hashedOnly: true })
+        expect(all).toEqual(["ROM 1:8", "ROM 1:11"])
+        expect(hashed.verses.map((v) => v.ref)).toEqual(["ROM 1:8"])
+        expect(hashed.missing).toEqual([])
+    })
+
+    it("hashedOnly omits verses from books with no interlinear file", () => {
+        expect(getInterlinear({ ...base, refs: "GAL 1:1", hashedOnly: true }).verses).toEqual([])
+    })
+
     it("guesses glosses for stale verses from the rest of the corpus", () => {
         // ROM 1:2 was edited after glossing, so ranges no longer match the text.
         const words = getInterlinear({ ...base, refs: "ROM 1:2", showSource: true }).verses[0].words

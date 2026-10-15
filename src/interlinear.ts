@@ -39,6 +39,8 @@ export interface InterlinearRequest {
     refs?: string
     allowPartial?: boolean
     showSource?: boolean
+    // Only return verses whose interlinear item has a Hash attribute (previously approved by a human)
+    hashedOnly?: boolean
 }
 
 export interface InterlinearResult {
@@ -84,6 +86,8 @@ interface InterlinearItem {
     label: string
     start: number
     end: number
+    // VerseData has a Hash attribute: a human approved this verse (its text may have changed since)
+    hashed: boolean
     clusters: Cluster[]
 }
 
@@ -247,7 +251,9 @@ function parseInterlinear(xml: string): InterlinearBook {
             })
         }
 
-        const parsed: InterlinearItem = { chapter, label, ...range, clusters }
+        const verseData = item[2].match(/<VerseData\b([^>]*)>/)
+        const hashed = verseData !== null && attr(verseData[1], "Hash") !== undefined
+        const parsed: InterlinearItem = { chapter, label, ...range, hashed, clusters }
         items.set(`${chapter}:${label}`, parsed)
     }
     return { items }
@@ -574,6 +580,7 @@ export function getInterlinear(request: InterlinearRequest): InterlinearResult {
     const projectDir = getProjectDir(request.projectsRoot, request.project)
     const lexicon = loadLexicon(projectDir)
     const showSource = request.showSource ?? false
+    const hashedOnly = request.hashedOnly ?? false
 
     let corpus = new Map<string, string>()
     const languageDir = interlinearDir(projectDir, request.language)
@@ -619,6 +626,7 @@ export function getInterlinear(request: InterlinearRequest): InterlinearResult {
             // Range offsets are relative to the item's own segment, so only use an item whose
             // verse label matches the text's; otherwise all words are guessed.
             const item = interlinear?.items.get(`${target.chapter}:${target.label}`)
+            if (hashedOnly && !item?.hashed) continue
             const segment = segments.get(`${target.chapter}:${target.label}`) ?? ""
             verses.push({ ref, words: verseWords(segment, item, lexicon, corpus, request.language, showSource) })
         }

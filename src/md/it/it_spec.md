@@ -182,6 +182,7 @@ Input:
         - `startChapter`, `startVerse`, `endChapter`, `endVerse`: optional, same semantics/defaults as `get-scripture` (omit all = whole book)
     - **List**: `refs`: string, semicolon-separated verse references (grammar below)
 - `allowPartial`: optional boolean, default false. Tolerate missing data instead of erroring (table below)
+- `hashedOnly`: optional boolean, default false. Return only verses whose interlinear `<VerseData>` has a `Hash` attribute (approved by a human at some point; text may have changed since). Verses with no interlinear item or no Hash are silently omitted (not "missing").
 
 #### `refs` grammar
 ```

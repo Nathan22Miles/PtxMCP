@@ -198,6 +198,9 @@ chosen gloss language.
 - `showSource` — if `true`, each word gets a third element saying where the gloss
   came from: `a` approved in this verse, `g` guessed from other verses, `l` from the
   lexicon, `-` never glossed, e.g. `["Kɨ","I","a"]`
+- `hashedOnly` — if `true`, only verses a human previously approved are returned
+  (those with a `Hash` attribute in the interlinear file, even if the verse text has
+  changed since). Other verses are omitted, not reported as missing.
 
 Output is JSON, one entry per verse:
 
