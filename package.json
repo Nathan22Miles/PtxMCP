@@ -1,6 +1,6 @@
 {
   "name": "@milesnl/ptx-mcp",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "MCP server for accessing scripture data from Paratext project folders",
   "main": "dist/index.js",
   "bin": {
@@ -16,7 +16,10 @@
     "build": "tsc",
     "test": "vitest run",
     "prepublishOnly": "npm run build",
-    "publish": "npm publish --access public"
+    "login": "npm login",
+    "publish": "npm publish --access public",
+    "published-version": "npm view @milesnl/ptx-mcp version",
+    "update-to-latest": "npm install -g @milesnl/ptx-mcp@latest"
   },
   "keywords": [],
   "author": "",

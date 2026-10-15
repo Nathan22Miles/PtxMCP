@@ -71,6 +71,7 @@ export function getScripture(request: ScriptureRequest): ScriptureResult {
     const allowPartial = request.allowPartial ?? false
     const missing: string[] = []
 
+    // Get parsed verse text for all projects
     const parsedByProject = new Map<string, ParsedBook>()
     for (const projectId of request.projects) {
         try {

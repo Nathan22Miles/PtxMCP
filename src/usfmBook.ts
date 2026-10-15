@@ -5,9 +5,9 @@ import path from "node:path"
 import usfm from "usfm-js"
 
 export interface ParsedVerse {
-    start: number
-    end: number
-    label: string
+    start: number // 11
+    end: number   // 13
+    label: string // GEN 3.11-13
     text: string
 }
 

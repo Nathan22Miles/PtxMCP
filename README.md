@@ -1,4 +1,4 @@
-# ptx-mcp
+# ptx-mcp (@milesnl/ptx-mcp)
 
 MCP (Model Context Protocol) server that reads scripture text directly from
 local Paratext project folders (USFM files) and exposes it as tools an LLM can call.
