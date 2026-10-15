@@ -1,6 +1,3 @@
-Here's the full SKILL.md for **paratext-term-renderings**:
-
-```markdown
 ---
 name: "paratext-term-renderings"
 description: Research and compile Biblical Term renderings from a Paratext project via the ptx-mcp connector. Use this skill whenever the user explicitly asks about Paratext term renderings — e.g. "find/get the rendering for [a Greek/Hebrew term]", "what references are denied for [a term]", "which references don't have a matching rendering", "fetch the interlinear to find a rendering", or asks to compile renderings into Paratext's TermRenderings encoding (word* wildcards, || between alternatives). Do not trigger for general Bible-study or translation questions that don't reference Paratext, term renderings, or the ptx-mcp tools.
@@ -42,4 +39,3 @@ A skill for looking up how a Biblical Term (Greek/Hebrew) is rendered in a speci
 - When a rendering is conveyed periphrastically (e.g. through grammatical contrast rather than a specific word), say so explicitly rather than picking the nearest word and calling it "the rendering."
 - Batch `get-scripture`/`get-it` calls per book where possible to reduce round trips, but don't request more verses than needed (watch the `endChapter`/`endVerse` defaulting-to-end-of-chapter behavior).
 - If the user asks for interlinear output formatted a specific way (e.g. "surface form only", "alternating rows"), match that formatting exactly rather than defaulting to the full three-line interlinear layout.
-```
