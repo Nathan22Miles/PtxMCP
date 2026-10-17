@@ -6,7 +6,10 @@ import {
     BiblicalTermsNotFoundError,
     getTermRefs,
     getTermRendering,
+    listTermRenderings,
+    listTerms,
     resolveBiblicalTermsPath,
+    resolveProjectTermsPath,
     searchTerms,
     TermNotFoundError,
     TermRenderingsNotFoundError
@@ -172,5 +175,71 @@ describe.skipIf(!hasAkg)("getTermRendering", () => {
         expect(() => getTermRendering(PROJECTS_ROOT, "AKG-Uni", "nope")).toThrow(TermNotFoundError)
         expect(() => getTermRendering(PROJECTS_ROOT, "NOPE", EUANGELION)).toThrow(ProjectNotFoundError)
         expect(() => getTermRendering(PROJECTS_ROOT, "WEB", EUANGELION)).toThrow(TermRenderingsNotFoundError)
+    })
+})
+
+describe("listTerms", () => {
+    it.skipIf(!hasTerms)("returns every term with structured refs", () => {
+        const terms = listTerms(TERMS_PATH)
+        expect(terms.length).toBeGreaterThan(1000)
+        const term = terms.find((t) => t.id.normalize("NFC") === EUANGELION.normalize("NFC"))
+        expect(term).toBeDefined()
+        expect(term!.refs.length).toBeGreaterThan(0)
+        expect(term!.refs[0]).toEqual(expect.objectContaining({ book: expect.any(String), chapter: expect.any(Number) }))
+    })
+})
+
+describe("listTermRenderings", () => {
+    it.skipIf(!hasAkg)("returns renderings, denials and notes for a project", () => {
+        const renderings = listTermRenderings(PROJECTS_ROOT, "AKG-Uni")
+        expect(renderings.length).toBeGreaterThan(0)
+        expect(renderings.some((r) => r.renderings.length > 0)).toBe(true)
+        for (const r of renderings) for (const d of r.denials) expect(d.book).toMatch(/^[0-9A-Z]{3}$/)
+    })
+
+    it("throws for an unknown project", () => {
+        expect(() => listTermRenderings(PROJECTS_ROOT, "NoSuchProject")).toThrow(ProjectNotFoundError)
+    })
+})
+
+describe("resolveProjectTermsPath", () => {
+    function makeProject(setting: string | undefined): { root: string; id: string } {
+        const root = fs.mkdtempSync(path.join(os.tmpdir(), "ptx-terms-"))
+        const id = "TST"
+        fs.mkdirSync(path.join(root, id))
+        const body = setting === undefined ? "" : `<BiblicalTermsListSetting>${setting}</BiblicalTermsListSetting>`
+        fs.writeFileSync(path.join(root, id, "Settings.xml"), `<ScriptureText>${body}</ScriptureText>`)
+        return { root, id }
+    }
+
+    it("resolves a list stored in a project folder", () => {
+        const { root, id } = makeProject("Project:TST:ProjectBiblicalTerms.xml")
+        fs.writeFileSync(path.join(root, id, "ProjectBiblicalTerms.xml"), "<BiblicalTermsList/>")
+        expect(resolveProjectTermsPath(root, id)).toBe(path.join(root, id, "ProjectBiblicalTerms.xml"))
+    })
+
+    it("throws when the project list file is missing", () => {
+        const { root, id } = makeProject("Project:TST:Missing.xml")
+        expect(() => resolveProjectTermsPath(root, id)).toThrow(BiblicalTermsNotFoundError)
+    })
+
+    it("looks up a Paratext-shipped list in the install dir", () => {
+        const { root, id } = makeProject("Major::AllBiblicalTerms.xml")
+        const install = fs.mkdtempSync(path.join(os.tmpdir(), "ptx-install-"))
+        fs.mkdirSync(path.join(install, "Terms", "Lists"), { recursive: true })
+        fs.writeFileSync(path.join(install, "Terms", "Lists", "AllBiblicalTerms.xml"), "<BiblicalTermsList/>")
+        expect(resolveProjectTermsPath(root, id, install)).toBe(path.join(install, "Terms", "Lists", "AllBiblicalTerms.xml"))
+    })
+
+    it.skipIf(!hasAkg)("reads the 11-digit verse refs used by project lists", () => {
+        const terms = listTerms(resolveProjectTermsPath(PROJECTS_ROOT, "AKG-Uni"))
+        const egyptian = terms.find((t) => t.id.normalize("NFC") === "Αἰγύπτιος".normalize("NFC"))
+        expect(egyptian?.refs[0]).toEqual({ book: "ACT", chapter: 7, verse: 22 })
+    })
+
+    it.skipIf(!hasAkg)("resolves AKG-Uni's own list", () => {
+        expect(resolveProjectTermsPath(PROJECTS_ROOT, "AKG-Uni")).toBe(
+            path.join(PROJECTS_ROOT, "AKG-Uni", "ProjectBiblicalTerms.xml")
+        )
     })
 })

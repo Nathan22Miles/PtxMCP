@@ -1,6 +1,6 @@
 import fs from "node:fs"
 import path from "node:path"
-import { bookCodeFromNumber, bookNumberFromCode, isBookCode } from "./books.js"
+import { BookCode, bookCodeFromNumber, bookNumberFromCode, isBookCode } from "./books.js"
 import { getProjectDir } from "./discovery.js"
 import { BookSpan, parseRefs, Span } from "./interlinear.js"
 import { InvalidReferenceError } from "./scripture.js"
@@ -110,8 +110,9 @@ function element(body: string, name: string): string {
 
 function parseVerseRefs(body: string): VerseRef[] {
     const unique = new Map<string, VerseRef>()
-    for (const match of body.matchAll(/<Verse>\s*(\d{9})\d{5}[^<]*<\/Verse>/g)) {
-        // BBBCCCVVV + 5-digit word position (dropped); rare suffixes like "{N:001}" ignored.
+    for (const match of body.matchAll(/<Verse>\s*(\d{9})\d{2,5}[^<]*<\/Verse>/g)) {
+        // BBBCCCVVV + word position (dropped): 5 digits in Paratext's lists, 2 in project lists
+        // such as ProjectBiblicalTerms.xml; rare suffixes like "{N:001}" ignored.
         const digits = match[1]
         if (unique.has(digits)) continue
         unique.set(digits, {
@@ -346,4 +347,94 @@ export function getTermRendering(projectsRoot: string, projectId: string, id: st
     const rendering = loadTermRenderings(projectDir, projectId).get(id.trim().normalize("NFC"))
     if (rendering === undefined) throw new TermNotFoundError(id)
     return { renderings: rendering.renderings, denials: formatRefs(rendering.denials), notes: rendering.notes }
+}
+
+// ---------- whole-list access (used by the PtxBt Biblical Terms explorer) ----------
+
+export interface BookVerseRef {
+    book: BookCode
+    chapter: number
+    verse: number
+}
+
+export interface TermInfo {
+    id: string
+    gloss: string
+    transliteration: string
+    language: string
+    category: string
+    strong: string[]
+    // Unique verses in canonical order.
+    refs: BookVerseRef[]
+}
+
+export interface ProjectTermRendering {
+    id: string
+    // Exactly as stored: "*" is a wildcard, "||" separates alternatives.
+    renderings: string
+    denials: BookVerseRef[]
+    notes: string
+}
+
+function toBookVerseRefs(verses: VerseRef[]): BookVerseRef[] {
+    const refs: BookVerseRef[] = []
+    for (const ref of verses) {
+        const book = bookCodeFromNumber(ref.bookNumber)
+        if (book) refs.push({ book, chapter: ref.chapter, verse: ref.verse })
+    }
+    return refs
+}
+
+// Every term in a Biblical Terms list, in file order.
+export function listTerms(termsPath: string): TermInfo[] {
+    return loadTerms(termsPath).terms.map((term) => ({
+        id: term.id,
+        gloss: term.gloss,
+        transliteration: term.transliteration,
+        language: term.language,
+        category: term.category,
+        strong: term.strong,
+        refs: toBookVerseRefs(term.verses)
+    }))
+}
+
+// Every term rendering in a project's TermRenderings.xml (terms with no entry are omitted).
+export function listTermRenderings(projectsRoot: string, projectId: string): ProjectTermRendering[] {
+    const projectDir = getProjectDir(projectsRoot, projectId)
+    return [...loadTermRenderings(projectDir, projectId).entries()].map(([id, rendering]) => ({
+        id,
+        renderings: rendering.renderings,
+        denials: toBookVerseRefs(rendering.denials),
+        notes: rendering.notes
+    }))
+}
+
+// The Biblical Terms list a project uses, from <BiblicalTermsListSetting> in its Settings.xml.
+// The setting is "<kind>:<project>:<file>", e.g. "Project:AKG-Uni:ProjectBiblicalTerms.xml" (a list
+// stored in a project folder) or "Major::BiblicalTerms.xml" (a list shipped with Paratext, looked up
+// in <paratextInstallDir>/Terms/Lists or the directories of DEFAULT_TERMS_PATHS).
+// A project with no setting uses the standard BiblicalTerms.xml.
+export function resolveProjectTermsPath(
+    projectsRoot: string,
+    projectId: string,
+    paratextInstallDir?: string
+): string {
+    const projectDir = getProjectDir(projectsRoot, projectId)
+    const settings = fs.readFileSync(path.join(projectDir, "Settings.xml"), "utf8")
+    const setting = element(settings, "BiblicalTermsListSetting")
+    const [, listProject = "", fileName = ""] = setting.split(":")
+    if (listProject && fileName) {
+        const listPath = path.join(projectsRoot, listProject, fileName)
+        if (!fs.existsSync(listPath)) throw new BiblicalTermsNotFoundError([listPath])
+        return listPath
+    }
+    const file = fileName || TERMS_FILE
+    // Only candidates that are absolute paths on this platform (the Windows defaults are skipped on macOS).
+    const dirs = paratextInstallDir
+        ? [path.join(paratextInstallDir, "Terms", "Lists")]
+        : DEFAULT_TERMS_PATHS.filter((candidate) => path.isAbsolute(candidate)).map((candidate) => path.dirname(candidate))
+    const tried = dirs.map((dir) => path.join(dir, file))
+    const found = tried.find((candidate) => fs.existsSync(candidate))
+    if (!found) throw new BiblicalTermsNotFoundError(tried)
+    return found
 }

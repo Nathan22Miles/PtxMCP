@@ -27,6 +27,11 @@ Everything exported from the modules below is available from the package root:
 The Biblical Terms functions take the path to `BiblicalTerms.xml`; use
 `resolveBiblicalTermsPath(paratextInstallDir?)` to locate it.
 
+For whole-list access: `listTerms(termsPath)` returns every term with structured verse refs,
+`listTermRenderings(projectsRoot, projectId)` returns a project's renderings, denials and notes, and
+`resolveProjectTermsPath(projectsRoot, projectId, paratextInstallDir?)` finds the list a project uses
+(from `<BiblicalTermsListSetting>` in its `Settings.xml`).
+
 ## License
 
 ISC
