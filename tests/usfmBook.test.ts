@@ -42,6 +42,28 @@ describe("parseBookFile", () => {
         expect(book.chapters.size).toBe(50)
     })
 
+    it("includes text from list line markers (\\li1) within a verse, but not notes", () => {
+        const dir = fs.mkdtempSync(path.join(os.tmpdir(), "ptx-usfm-"))
+        const file = path.join(dir, "43LUKTST.SFM")
+        fs.writeFileSync(
+            file,
+            [
+                "\\id LUK",
+                "\\c 3",
+                "\\li1",
+                "\\v 34 Juda a Jekovɨn otar.\\f + \\fr 3.34 \\ft a note\\f*",
+                "\\li1 Aisagh a Abrahamɨn otar. \\x - \\xo 3.34 \\xt Gen 21:3\\x*",
+                "\\li1 Tera a Nahorɨn otar.",
+                "\\v 35 Nahor a Serughɨn otar."
+            ].join("\n")
+        )
+        const verses = parseBookFile(file).chapters.get(3)!
+        expect(verses.find((v) => v.start === 34)!.text).toBe(
+            "Juda a Jekovɨn otar. Aisagh a Abrahamɨn otar. Tera a Nahorɨn otar."
+        )
+        expect(verses.find((v) => v.start === 35)!.text).toBe("Nahor a Serughɨn otar.")
+    })
+
     it("includes text from poetry line markers (\\q1/\\q2) within a verse", () => {
         const book = parseBookFile(WEB_EXO)
         const verse2 = book.chapters.get(15)!.find((v) => v.start === 2)!

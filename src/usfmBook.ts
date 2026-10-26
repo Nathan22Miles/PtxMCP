@@ -20,7 +20,19 @@ interface UsfmNode {
     type?: string
     tag?: string
     text?: string
+    content?: string
     children?: UsfmNode[]
+}
+
+// Notes are not part of the verse text: footnotes, endnotes and cross references.
+const NOTE_TAGS = new Set(["f", "fe", "ef", "x", "ex"])
+
+// usfm-js leaves the text of some markers (e.g. \li1 list lines) unparsed in `content`;
+// drop any markers and \w attributes left in it.
+function cleanContent(content: string): string {
+    return content
+        .replace(/\|[^\\\s]*/g, "")
+        .replace(/\\\+?[a-z]+\d*\*?/g, " ")
 }
 
 function collectText(nodes: UsfmNode[] | undefined): string {
@@ -28,9 +40,11 @@ function collectText(nodes: UsfmNode[] | undefined): string {
     let out = ""
     for (const node of nodes) {
         if (!node) continue
-        if (node.type === "footnote" || node.tag === "f") continue
+        if (node.type === "footnote" || (node.tag && NOTE_TAGS.has(node.tag))) continue
         if (typeof node.text === "string") {
             out += node.text
+        } else if (typeof node.content === "string") {
+            out += " " + cleanContent(node.content)
         }
         if (Array.isArray(node.children)) {
             out += collectText(node.children)
