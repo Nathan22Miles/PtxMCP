@@ -1,6 +1,11 @@
 # ptx-mcp (@milesnl/ptx-mcp)
 
-MCP (Model Context Protocol) server that reads scripture text directly from
+CAVEATS!
+- This MCP server is NOT a product of the Paratext team.
+- It was built for tech-savvy users who want to explore what Claude and P9 can do together.
+- This is no way a finished product nor a proposal about what the long term direction of AI connections to Paratext will or should look like ... it is, I hope, an interesting idea worth exploring.
+
+This is a MCP (Model Context Protocol) server that reads scripture text directly from
 local Paratext project folders (USFM files) and exposes it as tools an LLM can call.
 It can also return interlinear glosses (each word of a verse paired with its gloss)
 from a project's Paratext interlinear data, and search Paratext's Biblical Terms
@@ -30,7 +35,7 @@ questions — it picks the right tool and arguments on its own.
 - "Which verses are denied for ἀρχισυνάγωγος in AKG-Uni?"
 - "What notes has the AKG-Uni team written about how they translate 'Christ'?"
 
-## Caveats
+## (More) Caveats
 - This code
     - Has only had very limited testing so far. It did work for me on Mac and Windows.
     - Has only been tested with Claude Desktop.
